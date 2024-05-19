@@ -207,9 +207,11 @@ if __name__ == '__main__':
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
+    file_name = "emnist" + '.csv'
+    
     res = main_worker(options)
     res['unknown'] = unknown
     res['known'] = known
-    results[str(i)] = res
+    results["EMNIST"] = res
     df = pd.DataFrame(results)
     df.to_csv(os.path.join(dir_path, file_name))
