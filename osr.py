@@ -215,3 +215,4 @@ if __name__ == '__main__':
     results["EMNIST"] = res
     df = pd.DataFrame(results)
     df.to_csv(os.path.join(dir_path, file_name))
+    print("saved csv to: ", os.path.join(dir_path, file_name))
