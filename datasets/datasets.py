@@ -74,7 +74,7 @@ class EMNIST(torch.utils.data.dataset.Dataset):
         
         self.letters = torchvision.datasets.EMNIST(
             root=self.dataset_root,
-            download=False,
+            download=True,
             split='letters',
             transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
         )

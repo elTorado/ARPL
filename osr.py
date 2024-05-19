@@ -57,7 +57,8 @@ parser.add_argument('--cs', action='store_true', help="Confusing Sample", defaul
 
 def main_worker(options):
     
-    options['dataroot'] = '/home/deanheizmann/dataset/emnist'
+    #options['dataroot'] = '/home/deanheizmann/dataset/emnist'
+    options['dataroot'] = '/home/user/heizmann/dataset/emnist'
 
     
     torch.manual_seed(options['seed'])
