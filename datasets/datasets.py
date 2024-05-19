@@ -11,38 +11,107 @@ import numpy as np
 from PIL import Image
 from utils import mkdir_if_missing
 
-class MNISTRGB(MNIST):
-    """MNIST Dataset.
-    """
-    def __getitem__(self, index):
-        img, target = self.data[index], int(self.targets[index])
-        img = Image.fromarray(img.numpy(), mode='L')
-        img = img.convert("RGB")
+def pad_tensor(img, target_size=(32, 32)):
+    # Calculate padding for each side
+    height_pad = (target_size[1] - img.size(1)) // 2
+    width_pad = (target_size[0] - img.size(2)) // 2
 
-        if self.transform is not None:
-            img = self.transform(img)
+    # Apply padding
+    # The padding format is (left, right, top, bottom)
+    padded_img = F.pad(img, (width_pad, width_pad, height_pad, height_pad), mode='constant', value=0)
+    return padded_img
 
-        if self.target_transform is not None:
-            target = self.target_transform(target)
+class EMNIST(torch.utils.data.dataset.Dataset):
+    
+    
+    ''' IS ZERO PADDING NECESSARY AS WE CAN CHOOSE AN IMAGE SIZE??'''
+    
+    # We only need the digits from the mnist split for the ARPL implementation, hence there is no need to 
+    # create any logic around the letters.
+    
+    def transform(x):
+        
+        x = pad_tensor(x)
+        x = x.transpose(2,1)
+        
+        return x
+    
+    def get_labels(dataloader):
+            unique_labels = set()
+            for data in dataloader:
+                inputs, labels = data
+                unique_labels.update(labels.numpy())
+            return unique_labels
+                
+    def __init__(self, **options):
+        
+        options=options['options']
 
-        return img, target
+        self.workers = 8
+        self.which_set = "train"
+        self.batch_size = options['batch_size']
+        self.dataset_root = os.path.join(options['dataroot'])
+        self.pin_memory = True if options['use_gpu'] else False
+        self.num_classes = 10
+          
+        print(" DATASET ROOR IS :", self.dataset_root) 
+          
+        self.traindata = torchvision.datasets.EMNIST(
+            root=self.dataset_root,
+            train=True,
+            download=True,
+            split="mnist",
+            transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
+        )
+        
+        self.valdata = torchvision.datasets.EMNIST(
+            root=self.dataset_root,
+            train=False,
+            download=True,
+            split="mnist",
+            transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
+        )
+        
+        self.letters = torchvision.datasets.EMNIST(
+            root=self.dataset_root,
+            download=False,
+            split='letters',
+            transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
+        )
+        
+        self.train_loader = torch.utils.data.DataLoader(
+            self.traindata, batch_size=self.batch_size, shuffle=True,
+            num_workers=self.workers, pin_memory=self.pin_memory,
+        )
+        
+        self.test_loader = torch.utils.data.DataLoader(
+            self.valdata, batch_size=self.batch_size, shuffle=False,
+            num_workers=self.workers, pin_memory=self.pin_memory,
+        )
+        
+        self.out_loader = torch.utils.data.DataLoader(
+            self.letters, batch_size=self.batch_size, shuffle=True,
+            num_workers=self.workers, pin_memory=self.pin_memory,
+        )
+               
+        print("TRAINING LABELS: ", EMNIST.get_labels(self.train_loader))
+        print("TEST LABELS: ", EMNIST.get_labels(self.test_loader))
+        print("OPEN SET LABELS: ", EMNIST.get_labels(self.out_loader))
+                
+                
+        def __getitem__(self, index):
+            img, target = self.data[index], int(self.targets[index])
+            img = Image.fromarray(img.numpy(), mode='L')
+            img = img.convert("RGB")
 
-class KMNISTRGB(KMNIST):
-    """KMNIST Dataset.
-    """
-    def __getitem__(self, index):
-        img, target = self.data[index], int(self.targets[index])
-        img = Image.fromarray(img.numpy(), mode='L')
-        img = img.convert("RGB")
+            if self.transform is not None:
+                img = self.transform(img)
 
-        if self.transform is not None:
-            img = self.transform(img)
+            if self.target_transform is not None:
+                target = self.target_transform(target)
 
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return img, target
-
+            return img, target
+        
 class MNIST(object):
     def __init__(self, **options):
         transform = transforms.Compose([
@@ -72,148 +141,12 @@ class MNIST(object):
         self.trainloader = trainloader
         self.testloader = testloader
         self.num_classes = 10
-
-class KMNIST(object):
-    def __init__(self, **options):
-        transform = transforms.Compose([
-            transforms.Resize(32),
-            transforms.ToTensor(),
-        ])
-
-        batch_size = options['batch_size']
-        data_root = os.path.join(options['dataroot'], 'kmnist')
-
-        pin_memory = True if options['use_gpu'] else False
-
-        trainset = KMNISTRGB(root=data_root, train=True, download=True, transform=transform)
-        
-        trainloader = torch.utils.data.DataLoader(
-            trainset, batch_size=batch_size, shuffle=True,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-        
-        testset = KMNISTRGB(root=data_root, train=False, download=True, transform=transform)
-        
-        testloader = torch.utils.data.DataLoader(
-            testset, batch_size=batch_size, shuffle=False,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-
-        self.trainloader = trainloader
-        self.testloader = testloader
-        self.num_classes = 10
-
-class CIFAR10(object):
-    def __init__(self, **options):
-
-        transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-        ])
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-        ])
-
-        batch_size = options['batch_size']
-        data_root = os.path.join(options['dataroot'], 'cifar10')
-
-        pin_memory = True if options['use_gpu'] else False
-
-        trainset = torchvision.datasets.CIFAR10(root=data_root, train=True, download=True, transform=transform_train)
-        
-        trainloader = torch.utils.data.DataLoader(
-            trainset, batch_size=batch_size, shuffle=True,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-        
-        testset = torchvision.datasets.CIFAR10(root=data_root, train=False, download=True, transform=transform)
-        
-        testloader = torch.utils.data.DataLoader(
-            testset, batch_size=batch_size, shuffle=False,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-
-        self.num_classes = 10
-        self.trainloader = trainloader
-        self.testloader = testloader
-
-class CIFAR100(object):
-    def __init__(self, **options):
-        transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-        ])
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-        ])
-
-        batch_size = options['batch_size']
-        data_root = os.path.join(options['dataroot'], 'cifar100')
-
-        pin_memory = True if options['use_gpu'] else False
-
-        trainset = torchvision.datasets.CIFAR100(root=data_root, train=True, download=True, transform=transform_train)
-        
-        trainloader = torch.utils.data.DataLoader(
-            trainset, batch_size=batch_size, shuffle=True,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-        
-        testset = torchvision.datasets.CIFAR100(root=data_root, train=False, download=True, transform=transform)
-        
-        testloader = torch.utils.data.DataLoader(
-            testset, batch_size=batch_size, shuffle=False,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-
-        self.num_classes = 100
-        self.trainloader = trainloader
-        self.testloader = testloader
-
-
-class SVHN(object):
-    def __init__(self, **options):
-        transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-        ])
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-        ])
-
-        batch_size = options['batch_size']
-        data_root = os.path.join(options['dataroot'], 'svhn')
-
-        pin_memory = True if options['use_gpu'] else False
-
-        trainset = torchvision.datasets.SVHN(root=data_root, split='train', download=True, transform=transform_train)
-        
-        trainloader = torch.utils.data.DataLoader(
-            trainset, batch_size=batch_size, shuffle=True,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-        
-        testset = torchvision.datasets.SVHN(root=data_root, split='test', download=True, transform=transform)
-        
-        testloader = torch.utils.data.DataLoader(
-            testset, batch_size=batch_size, shuffle=False,
-            num_workers=options['workers'], pin_memory=pin_memory,
-        )
-
-        self.num_classes = 10
-        self.trainloader = trainloader
-        self.testloader = testloader
+     
 
 
 __factory = {
     'mnist': MNIST,
     'kmnist': KMNIST,
-    'cifar10': CIFAR10,
-    'cifar100': CIFAR100,
-    'svhn':SVHN,
 }
 
 def create(name, **options):

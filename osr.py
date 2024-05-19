@@ -15,7 +15,8 @@ import torch.backends.cudnn as cudnn
 
 from models import gan
 from models.models import classifier32, classifier32ABN
-from datasets.osr_dataloader import MNIST_OSR, CIFAR10_OSR, CIFAR100_OSR, SVHN_OSR, Tiny_ImageNet_OSR
+from datasets.datasets import EMNIST
+from datasets.osr_dataloader import MNIST_OSR
 from utils import Logger, save_networks, load_networks
 from core import train, train_cs, test
 
@@ -23,7 +24,7 @@ parser = argparse.ArgumentParser("Training")
 
 # Dataset
 parser.add_argument('--dataset', type=str, default='mnist', help="mnist | svhn | cifar10 | cifar100 | tiny_imagenet")
-parser.add_argument('--dataroot', type=str, default='./data')
+parser.add_argument('--dataroot', type=str, default='/home/user/heizmann/data/EMNIST/')
 parser.add_argument('--outf', type=str, default='./log')
 parser.add_argument('--out-num', type=int, default=50, help='For CIFAR100')
 
@@ -55,6 +56,10 @@ parser.add_argument('--eval', action='store_true', help="Eval", default=False)
 parser.add_argument('--cs', action='store_true', help="Confusing Sample", default=False)
 
 def main_worker(options):
+    
+    options['dataroot'] = '/home/deanheizmann/dataset/emnist'
+
+    
     torch.manual_seed(options['seed'])
     os.environ['CUDA_VISIBLE_DEVICES'] = options['gpu']
     use_gpu = torch.cuda.is_available()
@@ -62,31 +67,18 @@ def main_worker(options):
 
     if use_gpu:
         print("Currently using GPU: {}".format(options['gpu']))
+        options.update({'use_gpu':  True})
         cudnn.benchmark = True
         torch.cuda.manual_seed_all(options['seed'])
     else:
         print("Currently using CPU")
-
     # Dataset
     print("{} Preparation".format(options['dataset']))
-    if 'mnist' in options['dataset']:
-        Data = MNIST_OSR(known=options['known'], dataroot=options['dataroot'], batch_size=options['batch_size'], img_size=options['img_size'])
-        trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
-    elif 'cifar10' == options['dataset']:
-        Data = CIFAR10_OSR(known=options['known'], dataroot=options['dataroot'], batch_size=options['batch_size'], img_size=options['img_size'])
-        trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
-    elif 'svhn' in options['dataset']:
-        Data = SVHN_OSR(known=options['known'], dataroot=options['dataroot'], batch_size=options['batch_size'], img_size=options['img_size'])
-        trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
-    elif 'cifar100' in options['dataset']:
-        Data = CIFAR10_OSR(known=options['known'], dataroot=options['dataroot'], batch_size=options['batch_size'], img_size=options['img_size'])
-        trainloader, testloader = Data.train_loader, Data.test_loader
-        out_Data = CIFAR100_OSR(known=options['unknown'], dataroot=options['dataroot'], batch_size=options['batch_size'], img_size=options['img_size'])
-        outloader = out_Data.test_loader
-    else:
-        Data = Tiny_ImageNet_OSR(known=options['known'], dataroot=options['dataroot'], batch_size=options['batch_size'], img_size=options['img_size'])
-        trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
     
+    if 'emnist' in options['dataset']:
+        Data = EMNIST(options=options)
+        trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
+
     options['num_classes'] = Data.num_classes
 
     # Model
@@ -100,21 +92,16 @@ def main_worker(options):
     if options['cs']:
         print("Creating GAN")
         nz, ns = options['nz'], 1
-        if 'tiny_imagenet' in options['dataset']:
-            netG = gan.Generator(1, nz, 64, 3)
-            netD = gan.Discriminator(1, 3, 64)
-        else:
-            netG = gan.Generator32(1, nz, 64, 3)
-            netD = gan.Discriminator32(1, 3, 64)
+
+        netG = gan.Generator32(1, nz, 64, 3)
+        netD = gan.Discriminator32(1, 3, 64)
         fixed_noise = torch.FloatTensor(64, nz, 1, 1).normal_(0, 1)
         criterionD = nn.BCELoss()
 
     # Loss
     options.update(
-        {
-            'feat_dim': feat_dim,
-            'use_gpu':  use_gpu
-        }
+    feat_dim=feat_dim,
+    use_gpu=use_gpu
     )
 
     Loss = importlib.import_module('loss.'+options['loss'])
@@ -131,7 +118,9 @@ def main_worker(options):
     model_path = os.path.join(options['outf'], 'models', options['dataset'])
     if not os.path.exists(model_path):
         os.makedirs(model_path)
+        
     
+
     if options['dataset'] == 'cifar100':
         model_path += '_50'
         file_name = '{}_{}_{}_{}_{}'.format(options['model'], options['loss'], 50, options['item'], options['cs'])
@@ -194,40 +183,32 @@ if __name__ == '__main__':
     results = dict()
     
     from split import splits_2020 as splits
-    
-    for i in range(len(splits[options['dataset']])):
-        known = splits[options['dataset']][len(splits[options['dataset']])-i-1]
-        if options['dataset'] == 'cifar100':
-            unknown = splits[options['dataset']+'-'+str(options['out_num'])][len(splits[options['dataset']])-i-1]
-        elif options['dataset'] == 'tiny_imagenet':
-            img_size = 64
-            options['lr'] = 0.001
-            unknown = list(set(list(range(0, 200))) - set(known))
-        else:
-            unknown = list(set(list(range(0, 10))) - set(known))
 
-        options.update(
-            {
-                'item':     i,
-                'known':    known,
-                'unknown':  unknown,
-                'img_size': img_size
-            }
-        )
 
-        dir_name = '{}_{}'.format(options['model'], options['loss'])
-        dir_path = os.path.join(options['outf'], 'results', dir_name)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+    known = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    unknown = [
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+        'U', 'V', 'W', 'X', 'Y', 'Z'
+            ]
 
-        if options['dataset'] == 'cifar100':
-            file_name = '{}_{}.csv'.format(options['dataset'], options['out_num'])
-        else:
-            file_name = options['dataset'] + '.csv'
+    options.update(
+        {
+            'item':     "emnist",
+            'known':    known,
+            'unknown':  unknown,
+            'img_size': img_size
+        }
+    )
 
-        res = main_worker(options)
-        res['unknown'] = unknown
-        res['known'] = known
-        results[str(i)] = res
-        df = pd.DataFrame(results)
-        df.to_csv(os.path.join(dir_path, file_name))
+    dir_name = '{}_{}'.format(options['model'], options['loss'])
+    dir_path = os.path.join(options['outf'], 'results', dir_name)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+    res = main_worker(options)
+    res['unknown'] = unknown
+    res['known'] = known
+    results[str(i)] = res
+    df = pd.DataFrame(results)
+    df.to_csv(os.path.join(dir_path, file_name))
