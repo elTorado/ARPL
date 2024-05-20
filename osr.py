@@ -55,7 +55,7 @@ parser.add_argument('--loss', type=str, default='ARPLoss')
 parser.add_argument('--eval', action='store_true', help="Eval", default=False)
 parser.add_argument('--cs', action='store_true', help="Confusing Sample", default=False)
 
-parser.add_argument('--generate',  help="Confusing Sample", default=False)
+parser.add_argument('--generate', action='store_true', help="Confusing Sample", default=False)
 parser.add_argument('--number_images', type= int, help="number of images to create", default = 100)
 
 
