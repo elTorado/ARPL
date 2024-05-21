@@ -39,13 +39,12 @@ def generate_images(net, netD, netG, iterations, trainloader, options):
         if options['use_gpu']:
             noise = noise.cuda()
             start_images = start_images.cuda()
-            images.append(fake.cpu().detach())  # Append to list and ensure tensor is on CPU and detached
 
         
         #create fake data from generator
         noise = Variable(noise)
         fake = netG(noise)
-        images.append(fake)
+        images.append(fake.cpu().detach())  # Append to list and ensure tensor is on CPU and detached
         
     # Convert list of tensors to a single tensor
     images_tensor = torch.stack(images)
