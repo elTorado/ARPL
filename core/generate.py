@@ -16,7 +16,7 @@ def generate_arpl_images(net, netD, netG, iterations, trainloader, **options):
     images = export_images(images=images, result_dir=result_dir, dataloader=trainloader)
     print("DONE")
 
-def generate_images(net, netD, netG, iterations, trainloader, **options):
+def generate_images(net, netD, netG, iterations, trainloader, options):
  
     net.train()
     netD.train()

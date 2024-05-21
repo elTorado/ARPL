@@ -127,6 +127,13 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
     
     
         loss_all += losses.avg
+        
+        ''' ============================================================================'''
+        
+        # FOR DEBUGGING; ONLY RUN THROUGH ONE BATCH:
+        
+        if (batch_idx+1) % options['print_freq'] == 0:
+            break
 
     if options["generate"] == True:
         iterations = options["number_images"]
