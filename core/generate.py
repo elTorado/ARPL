@@ -66,15 +66,27 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
     return video_filename
 
 def export_images(images, result_dir, dataloader):
-    images = images.data.cpu().numpy()
-    images = np.array(images).transpose((0,2,3,1))
+    print("Initial image type:", type(images))  # Check the initial type of images
+    print("Initial image shape:", getattr(images, 'shape', None))  # Safe way to get shape attribute if exists
+
+    images = images.data.cpu().numpy()  # Assuming images is a PyTorch tensor
+    print("After conversion to numpy, shape:", images.shape)  # Verify shape after conversion
+
+    try:
+        images = np.array(images).transpose((0, 2, 3, 1))
+        print("After transpose, shape:", images.shape)  # This should print the new shape if transpose succeeds
+    except ValueError as e:
+        print("Error in transposing:", str(e))
+        print("Actual shape before transposing:", images.shape)  # Output the problematic shape
+        return None  # Early exit or handle error
+
     video_filename = make_video_filename(result_dir, dataloader, label_type='grid')
-     # Save the images in npy/jpg format as input for the labeling system
     trajectory_filename = video_filename.replace('.mjpeg', '.npy')
     np.save(trajectory_filename, images)
-    imutil.show(images, display=False, filename=video_filename.replace('.mjpeg', '.jpg'))
 
-    # Save the images in jpg format to display to the user
+    # Save the images in jpg format for visual verification
+    imutil.show(images, display=False, filename=video_filename.replace('.mjpeg', '.jpg'))
     name = 'arpl{}.jpg'.format(int(time.time()))
     jpg_filename = os.path.join(result_dir, 'images', name)
+
     return images
