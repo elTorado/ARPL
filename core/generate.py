@@ -24,14 +24,14 @@ def generate_images(net, netD, netG, iterations, trainloader, options):
 
     torch.cuda.empty_cache()
     
-    # Start with randomly-selected images from the dataloader
-    start_images, _ = trainloader.get_batch()
     
     images = np.array()
     for i in iterations:
         total_batches = len(trainloader)  # Total number of batches
         random_index = random.randint(0, total_batches - 1) 
-        
+        for i, (data, label) in enumerate(trainloader):
+            if i == random_index:
+                start_images = data        
         #select a rondom batch from the trainloader
             
         noise = torch.FloatTensor(start_images.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
