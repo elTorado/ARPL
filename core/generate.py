@@ -25,24 +25,34 @@ def generate_images(net, netD, netG, iterations, trainloader, options):
     torch.cuda.empty_cache()
     
     
-    images = np.array()
-    for i in iterations:
+    images = []  # Use a list to collect tensors
+    for _ in iterations:
         total_batches = len(trainloader)  # Total number of batches
         random_index = random.randint(0, total_batches - 1) 
         for i, (data, label) in enumerate(trainloader):
             if i == random_index:
                 start_images = data        
+                break
         #select a rondom batch from the trainloader
             
         noise = torch.FloatTensor(start_images.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
         if options['use_gpu']:
             noise = noise.cuda()
+            start_images = start_images.cuda()
+            images.append(fake.cpu().detach())  # Append to list and ensure tensor is on CPU and detached
+
         
         #create fake data from generator
         noise = Variable(noise)
         fake = netG(noise)
         images.append(fake)
-    return images
+        
+    # Convert list of tensors to a single tensor
+    images_tensor = torch.stack(images)
+    # NumPy array:
+    images_np = images_tensor.numpy()
+    
+    return images_np
         
 # Trajectories are written to result_dir/trajectories/
 def make_video_filename(result_dir, dataloader, label_type='active'):
