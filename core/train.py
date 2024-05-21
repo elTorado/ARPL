@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
 from utils import AverageMeter
-from .generate import generate_images
+from .generate import generate_arpl_images
 
 def train(net, criterion, optimizer, trainloader, epoch=None, **options):
     net.train()
@@ -137,7 +137,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
 
     if options["generate"] == True:
         iterations = options["number_images"]
-        images = generate_images(net,  netD, netG, iterations, trainloader, options)
+        images = generate_arpl_images(net,  netD, netG, iterations, trainloader, options)
 
 
     return loss_all

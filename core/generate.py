@@ -8,7 +8,7 @@ import os
 import numpy as np
 import imutil
 
-def generate_arpl_images(net, netD, netG, iterations, trainloader, **options):
+def generate_arpl_images(net, netD, netG, iterations, trainloader, options):
     
     images = generate_images(net, netD, netG, iterations, trainloader, **options)
     
