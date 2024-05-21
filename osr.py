@@ -98,8 +98,8 @@ def main_worker(options):
         print("Creating GAN")
         nz, ns = options['nz'], 1
 
-        netG = gan.Generator32(1, nz, 64, 3)
-        netD = gan.Discriminator32(1, 3, 64)
+        netG = gan.Generator32(1, nz, 64, 1)
+        netD = gan.Discriminator32(1, 1, 64)
         fixed_noise = torch.FloatTensor(64, nz, 1, 1).normal_(0, 1)
         criterionD = nn.BCELoss()
 

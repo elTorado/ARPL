@@ -15,6 +15,12 @@ def weights_init(m):
         m.bias.data.fill_(0)
 
 class _netD32(nn.Module):
+    
+    # ngpu = number of available gpu's
+    # nc = number of channels
+    # ndf = number of features in first layer
+    
+    
     def __init__(self, ngpu, nc, ndf):
         super(_netD32, self).__init__()
         self.ngpu = ngpu
@@ -53,6 +59,12 @@ class _netD32(nn.Module):
         return output
 
 class _netG32(nn.Module):
+    
+    # ngpu = number of available gpu's
+    # nz = number latent dimension / size of noise vector
+    # ngf = number of generator features / depth of feature maps
+    # nc = number of channels
+    
     def __init__(self, ngpu, nz, ngf, nc):
         super(_netG32, self).__init__()
         self.ngpu = ngpu
