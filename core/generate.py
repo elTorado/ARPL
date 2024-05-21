@@ -48,10 +48,10 @@ def generate_images(net, netD, netG, iterations, trainloader, options):
         
     # Convert list of tensors to a single tensor
     images_tensor = torch.stack(images)
-    # NumPy array:
-    images_np = images_tensor.numpy()
+    '''# NumPy array:
+    images_np = images_tensor.numpy()'''
     
-    return images_np
+    return images_tensor
         
 # Trajectories are written to result_dir/trajectories/
 def make_video_filename(result_dir, dataloader, label_type='active'):
