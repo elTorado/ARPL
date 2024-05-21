@@ -10,7 +10,7 @@ import imutil
 
 def generate_arpl_images(net, netD, netG, iterations, trainloader, options):
     
-    images = generate_images(net, netD, netG, iterations, trainloader, **options)
+    images = generate_images(net, netD, netG, iterations, trainloader, options)
     
     result_dir = options["result_dir"]
     images = export_images(images=images, result_dir=result_dir, dataloader=trainloader)
