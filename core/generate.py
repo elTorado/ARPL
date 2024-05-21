@@ -26,7 +26,7 @@ def generate_images(net, netD, netG, iterations, trainloader, options):
     
     
     images = []  # Use a list to collect tensors
-    for _ in iterations:
+    for _ in range(iterations):
         total_batches = len(trainloader)  # Total number of batches
         random_index = random.randint(0, total_batches - 1) 
         for i, (data, label) in enumerate(trainloader):
