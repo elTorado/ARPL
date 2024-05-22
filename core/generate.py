@@ -7,6 +7,7 @@ import time
 import os
 import numpy as np
 import imutil
+from PIL import Image
 
 def generate_arpl_images(net, netD, netG, iterations, trainloader, options):
     
@@ -65,21 +66,40 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
         os.mkdir(path)
     return video_filename
 
-import os
-import numpy as np
-import torch
-from PIL import Image
-import time
 
+'''
 def export_images(images, result_dir, dataloader):
+    # Convert to numpy and remove singleton dimension
     images = images.data.cpu().numpy().squeeze(2)  # Shape should now be (5, 64, 32, 32)
 
+    # Prepare directory for saving images
     images_dir = os.path.join(result_dir, 'images')
     if not os.path.exists(images_dir):
         os.makedirs(images_dir)
 
+    # Process each image in the batch and sequence
     for batch_index, seq in enumerate(images):
-        batch_images = [] 
+        for frame_index, frame in enumerate(seq):
+            img = Image.fromarray(frame.astype('uint8'), 'L')  # Create a grayscale image
+            filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
+            img.save(os.path.join(images_dir, filename))
+            
+    print(f"Images are saved in: {images_dir}")
+    return images  # Return the array of images (optional, depending on further needs)
+'''
+
+def export_images(images, result_dir, dataloader):
+    # Convert to numpy and remove singleton dimension
+    images = images.data.cpu().numpy().squeeze(2)  # Shape should now be (5, 64, 32, 32)
+
+    # Prepare directory for saving images
+    images_dir = os.path.join(result_dir, 'images')
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
+
+    # Process each image in the batch and sequence
+    for batch_index, seq in enumerate(images):
+        batch_images = []  # List to hold images for creating the grid
         for frame_index, frame in enumerate(seq):
             img = Image.fromarray(frame.astype('uint8'), 'L')  # Create a grayscale image
             filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
@@ -87,18 +107,22 @@ def export_images(images, result_dir, dataloader):
             batch_images.append(img)
 
         # Create and save the grid image for each batch
-        num_cols = int(np.sqrt(len(batch_images)))  
-        num_rows = (len(batch_images) + num_cols - 1) // num_cols  
-        grid_image = Image.new('L', (num_cols * frame.shape[2], num_rows * frame.shape[1]))  
-        
-        for index, image in enumerate(batch_images):
-            row = index // num_cols
-            col = index % num_cols
-            grid_image.paste(image, (col * frame.shape[2], row * frame.shape[1]))
-        
-        # Save the grid image
-        grid_filename = f'arpl_batch{batch_index}_grid_{int(time.time())}.jpg'
-        grid_image.save(os.path.join(images_dir, grid_filename))
+        if len(batch_images) > 0:
+            num_cols = max(int(np.sqrt(len(batch_images))), 1)  # Ensure at least 1 column
+            num_rows = (len(batch_images) + num_cols - 1) // num_cols  # Calculate rows ensuring at least 1 row
+            grid_image = Image.new('L', (num_cols * frame.shape[2], num_rows * frame.shape[1]))  # Create a new empty image
+
+            # Place images in the grid
+            for index, image in enumerate(batch_images):
+                row = index // num_cols
+                col = index % num_cols
+                grid_image.paste(image, (col * frame.shape[2], row * frame.shape[1]))
+            
+            # Save the grid image
+            grid_filename = f'arpl_batch{batch_index}_grid_{int(time.time())}.jpg'
+            grid_image.save(os.path.join(images_dir, grid_filename))
+        else:
+            print(f"No images to process in batch {batch_index}")
 
     print(f"Images and image grids are saved in: {images_dir}")
     return images  # Optionally return the array of images if needed elsewhere
