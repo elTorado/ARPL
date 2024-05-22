@@ -110,13 +110,13 @@ def export_images(images, result_dir, dataloader):
         if len(batch_images) > 0:
             num_cols = max(int(np.sqrt(len(batch_images))), 1)  # Ensure at least 1 column
             num_rows = (len(batch_images) + num_cols - 1) // num_cols  # Calculate rows ensuring at least 1 row
-            grid_image = Image.new('L', (num_cols * frame.shape[2], num_rows * frame.shape[1]))  # Create a new empty image
+            grid_image = Image.new('L', (num_cols * frame.shape[1], num_rows * frame.shape[0]))  # Create a new empty image
 
             # Place images in the grid
             for index, image in enumerate(batch_images):
                 row = index // num_cols
                 col = index % num_cols
-                grid_image.paste(image, (col * frame.shape[2], row * frame.shape[1]))
+                grid_image.paste(image, (col * frame.shape[1], row * frame.shape[0]))
             
             # Save the grid image
             grid_filename = f'arpl_batch{batch_index}_grid_{int(time.time())}.jpg'
