@@ -127,11 +127,6 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
     
     
         loss_all += losses.avg
-        
-
-    if options["generate"] == True:
-        iterations = options["number_images"]
-        images = generate_arpl_images(net,  netD, netG, iterations, trainloader, options)
 
 
-    return loss_all
+    return loss_all, netG
