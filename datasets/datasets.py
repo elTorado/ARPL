@@ -21,6 +21,25 @@ def pad_tensor(img, target_size=(32, 32)):
     padded_img = F.pad(img, (width_pad, width_pad, height_pad, height_pad), mode='constant', value=0)
     return padded_img
 
+
+class CustomEMNIST(torch.utils.data.dataset.Dataset):
+    def __init__(self, root, transform=None):
+        self.emnist = torchvision.datasets.EMNIST(
+            root=root,
+            split='letters',
+            download=True,
+            transform=transform
+        )
+
+    def __len__(self):
+        return len(self.emnist)
+
+    def __getitem__(self, index):
+        # Retrieve the original data but ignore its label
+        data, _ = self.emnist[index]
+        # Return the data with label -1
+        return data, -1
+
 class EMNIST(torch.utils.data.dataset.Dataset):
     
     
@@ -72,11 +91,9 @@ class EMNIST(torch.utils.data.dataset.Dataset):
             transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
         )
         
-        self.letters = torchvision.datasets.EMNIST(
+        self.letters = CustomEMNIST(
             root=self.dataset_root,
-            download=True,
-            split='letters',
-            transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
+            transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform  ])
         )
         
         self.train_loader = torch.utils.data.DataLoader(
@@ -90,8 +107,8 @@ class EMNIST(torch.utils.data.dataset.Dataset):
         )
         
         self.out_loader = torch.utils.data.DataLoader(
-            self.letters, batch_size=self.batch_size, shuffle=True,
-            num_workers=self.workers, pin_memory=self.pin_memory,
+            self.letters, batch_size=self.batch_size, shuffle=True, 
+            num_workers=self.workers,  pin_memory=self.pin_memory,
         )
                
         print("TRAINING LABELS: ", EMNIST.get_labels(self.train_loader))
@@ -102,7 +119,6 @@ class EMNIST(torch.utils.data.dataset.Dataset):
         def __getitem__(self, index):
             img, target = self.data[index], int(self.targets[index])
             img = Image.fromarray(img.numpy(), mode='L')
-            img = img.convert("RGB")
 
             if self.transform is not None:
                 img = self.transform(img)
