@@ -65,28 +65,27 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
         os.mkdir(path)
     return video_filename
 
+import os
+import numpy as np
+import torch
+from PIL import Image
+import time
+
 def export_images(images, result_dir, dataloader):
-    print("Initial image type:", type(images))  # Check the initial type of images
-    print("Initial image shape:", getattr(images, 'shape', None))  # Safe way to get shape attribute if exists
+    # Convert to numpy and remove singleton dimension
+    images = images.data.cpu().numpy().squeeze(2)  # Shape should now be (5, 64, 32, 32)
 
-    images = images.data.cpu().numpy()  # Assuming images is a PyTorch tensor
-    print("After conversion to numpy, shape:", images.shape)  # Verify shape after conversion
+    # Prepare directory for saving images
+    images_dir = os.path.join(result_dir, 'images')
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
 
-    try:
-        images = np.array(images).transpose((0, 2, 3, 1))
-        print("After transpose, shape:", images.shape)  # This should print the new shape if transpose succeeds
-    except ValueError as e:
-        print("Error in transposing:", str(e))
-        print("Actual shape before transposing:", images.shape)  # Output the problematic shape
-        return None  # Early exit or handle error
-
-    video_filename = make_video_filename(result_dir, dataloader, label_type='grid')
-    trajectory_filename = video_filename.replace('.mjpeg', '.npy')
-    np.save(trajectory_filename, images)
-
-    # Save the images in jpg format for visual verification
-    imutil.show(images, display=False, filename=video_filename.replace('.mjpeg', '.jpg'))
-    name = 'arpl{}.jpg'.format(int(time.time()))
-    jpg_filename = os.path.join(result_dir, 'images', name)
-
-    return images
+    # Process each image in the batch and sequence
+    for batch_index, seq in enumerate(images):
+        for frame_index, frame in enumerate(seq):
+            img = Image.fromarray(frame.astype('uint8'), 'L')  # Create a grayscale image
+            filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
+            img.save(os.path.join(images_dir, filename))
+            
+    print(f"Images are saved in: {images_dir}")
+    return images  # Return the array of images (optional, depending on further needs)
