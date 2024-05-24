@@ -167,7 +167,7 @@ def main_worker(options):
                 optimizer, optimizerD, optimizerG,
                 trainloader, epoch=epoch, **options)
 
-            save_network(netG, epoch=options["max-epoch"], result_dir=options["result_dir"])
+            save_network(netG, epoch=options["max_epoch"], result_dir=options["result_dir"])
        
         if options['stepsize'] > 0: scheduler.step()
     
