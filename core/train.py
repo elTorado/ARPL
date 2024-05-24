@@ -4,7 +4,7 @@ from torch.autograd import Variable
 from utils import AverageMeter
 from .generate import generate_arpl_images
 import pathlib
-
+import os
 
 def train(net, criterion, optimizer, trainloader, epoch=None, **options):
     net.train()
