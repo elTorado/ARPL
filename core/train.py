@@ -3,6 +3,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from utils import AverageMeter
 from .generate import generate_arpl_images
+import pathlib
+
 
 def train(net, criterion, optimizer, trainloader, epoch=None, **options):
     net.train()
@@ -130,3 +132,20 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
 
 
     return loss_all, netG
+
+def ensure_directory_exists(filename):
+    # Assume whatever comes after the last / is the filename
+    tokens = filename.split('/')[:-1]
+    # Perform a mkdir -p on the rest of the path
+    path = '/'.join(tokens)
+    pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+    
+def save_network(network, epoch, result_dir):
+    weights = network.state_dict()
+    filename = '{}/checkpoints/{}_epoch_{:04d}.pth'.format(result_dir, network, epoch)
+    ensure_directory_exists(filename)
+    torch.save(weights, filename)
+    
+    
+
+

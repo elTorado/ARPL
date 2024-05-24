@@ -18,7 +18,7 @@ from models.models import classifier32, classifier32ABN
 from datasets.datasets import EMNIST
 from datasets.osr_dataloader import MNIST_OSR
 from utils import Logger, save_networks, load_networks
-from core import train, train_cs, test
+from core import train, train_cs, test, save_network
 from core.generate import generate_arpl_images
 
 
@@ -167,15 +167,8 @@ def main_worker(options):
                 optimizer, optimizerD, optimizerG,
                 trainloader, epoch=epoch, **options)
 
-        train(net, criterion, optimizer, trainloader, epoch=epoch, **options)
-
-        if options['eval_freq'] > 0 and (epoch+1) % options['eval_freq'] == 0 or (epoch+1) == options['max_epoch']:
-            print("==> Test", options['loss'])
-            results = test(net, criterion, testloader, outloader, epoch=epoch, **options)
-            print("Acc (%): {:.3f}\t AUROC (%): {:.3f}\t OSCR (%): {:.3f}\t".format(results['ACC'], results['AUROC'], results['OSCR']))
-
-            save_networks(net, model_path, file_name, criterion=criterion)
-        
+            save_network(netG)
+       
         if options['stepsize'] > 0: scheduler.step()
     
     if options["generate"] == True:

@@ -8,19 +8,69 @@ import os
 import numpy as np
 import imutil
 from PIL import Image
+import pathlib
+from datasets.datasets import EMNIST
+import argparse
 
-def generate_arpl_images(net, netD, netG, iterations, trainloader, options):
+
+parser = argparse.ArgumentParser("Generating Images")
+
+# Dataset
+parser.add_argument('--dataset', type=str, default='mnist', help="mnist | svhn | cifar10 | cifar100 | tiny_imagenet")
+parser.add_argument('--dataroot', type=str, default='/home/user/heizmann/data/EMNIST/')
+parser.add_argument('--outf', type=str, default='./log')
+
+# optimization
+parser.add_argument('--batch-size', type=int, default=64)
+parser.add_argument('--lr', type=float, default=0.1, help="learning rate for model")
+parser.add_argument('--gan_lr', type=float, default=0.0002, help="learning rate for gan")
+parser.add_argument('--max-epoch', type=int, default=100)
+parser.add_argument('--stepsize', type=int, default=30)
+parser.add_argument('--temp', type=float, default=1.0, help="temp")
+parser.add_argument('--num-centers', type=int, default=1)
+
+# model
+parser.add_argument('--weight-pl', type=float, default=0.1, help="weight for center loss")
+parser.add_argument('--beta', type=float, default=0.1, help="weight for entropy loss")
+parser.add_argument('--model', type=str, default='classifier32')
+
+# misc
+parser.add_argument('--nz', type=int, default=100)
+parser.add_argument('--ns', type=int, default=1)
+parser.add_argument('--eval-freq', type=int, default=1)
+parser.add_argument('--print-freq', type=int, default=100)
+parser.add_argument('--gpu', type=str, default='0')
+parser.add_argument('--seed', type=int, default=0)
+parser.add_argument('--use-cpu', action='store_true')
+parser.add_argument('--save-dir', type=str, default='../log')
+parser.add_argument('--result_dir', type=str, default='../generated_emnist')
+
+parser.add_argument('--loss', type=str, default='ARPLoss')
+parser.add_argument('--eval', action='store_true', help="Eval", default=False)
+parser.add_argument('--cs', action='store_true', help="Confusing Sample", default=False)
+
+parser.add_argument('--generate', action='store_true', help="Confusing Sample", default=False)
+parser.add_argument('--number_images', type= int, help="number of images to create", default = 100)
+
+
+
+def generate_arpl_images(netG, options):
+
+    Data = EMNIST(options=options)
+    trainloader = Data.train_loader
+    iterations = options["number_images"]
+    netG = get_network(netG, epoch=options.epochs, options=options)
     
-    images = generate_images(net, netD, netG, iterations, trainloader, options)
+    
+    images = generate_images(netG, iterations, trainloader, options)
     
     result_dir = options["result_dir"]
     images = export_images(images=images, result_dir=result_dir, dataloader=trainloader)
     print("DONE")
 
-def generate_images(net, netD, netG, iterations, trainloader, options):
- 
-    net.train()
-    netD.train()
+def generate_images(netG, iterations, trainloader, options):
+
+    
     netG.train()
 
     torch.cuda.empty_cache()
@@ -126,3 +176,32 @@ def export_images(images, result_dir, dataloader):
 
     print(f"Images and image grids are saved in: {images_dir}")
     return images  # Optionally return the array of images if needed elsewhere
+
+
+def get_network(network, epoch, options):
+    pth = get_pth_by_epoch(options['result_dir'], network, epoch)
+    if pth:
+        print("Loading {} from checkpoint {}".format(network, pth))
+        network.load_state_dict(torch.load(pth))
+    return network
+
+def ensure_directory_exists(filename):
+    # Assume whatever comes after the last / is the filename
+    tokens = filename.split('/')[:-1]
+    # Perform a mkdir -p on the rest of the path
+    path = '/'.join(tokens)
+    pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+    
+def get_pth_by_epoch(result_dir, name, epoch=None):
+    checkpoint_path = os.path.join(result_dir, 'checkpoints/')
+    ensure_directory_exists(checkpoint_path)
+    files = os.listdir(checkpoint_path)
+    suffix = '.pth'
+    if epoch is not None:
+        suffix = 'epoch_{:04d}.pth'.format(epoch)
+    files = [f for f in files if '{}_epoch'.format(name) in f]
+    if not files:
+        return None
+    files = [os.path.join(checkpoint_path, fn) for fn in files]
+    files.sort(key=lambda x: os.stat(x).st_mtime)
+    return files[-1]
