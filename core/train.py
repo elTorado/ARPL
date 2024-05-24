@@ -143,9 +143,28 @@ def ensure_directory_exists(filename):
 def save_network(network, epoch, result_dir):
     weights = network.state_dict()
     filename = '{}/checkpoints/{}_epoch_{:04d}.pth'.format(result_dir, network, epoch)
-    ensure_directory_exists(filename)
-    torch.save(weights, filename)
+    print(f"Attempting to save weights to: {filename}")  # Shows the full path attempting to save to
     
+    # Ensure the directory exists
+    ensure_directory_exists(filename)
+    
+    # Check if the directory is writable
+    directory = os.path.dirname(filename)
+    if os.access(directory, os.W_OK):
+        print("Directory is writable")
+    else:
+        print("Directory is not writable")
+    
+    # Attempt to save the file
+    try:
+        torch.save(weights, filename)
+        print("Save successful")
+    except Exception as e:
+        print(f"Failed to save: {e}")
+
+    # Additional debug to check the directory and permissions after the fact
+    print(f"Contents of directory {directory}:")
+    print(os.listdir(directory))  # List files to see what's actually in there
     
 
 
