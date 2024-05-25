@@ -68,13 +68,9 @@ def generate_arpl_images(netG, options):
     print("DONE")
 
 def generate_images(netG, iterations, trainloader, options):
-
-    
     netG.train()
-
     torch.cuda.empty_cache()
-    
-    
+     
     images = []  
     for _ in range(iterations):
         total_batches = len(trainloader)  
@@ -115,21 +111,23 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
         os.mkdir(path)
     return video_filename
 
-
 def export_images(images, result_dir, dataloader):
-    # Convert to numpy and remove singleton dimension
-    images = images.data.cpu().numpy().squeeze(2)  # Shape should now be (5, 64, 32, 32)
+    # Reshap to  (batch, seq, height, width)
+    images = images.data.cpu().numpy().squeeze(2)  
 
-    # Prepare directory for saving images
+    # Ensure images are scaled to 0-255 and adjust if needed
+    if images.max() <= 1.0:
+        images *= 255  
+
     images_dir = os.path.join(result_dir, 'images')
     if not os.path.exists(images_dir):
         os.makedirs(images_dir)
 
-    # Process each image in the batch and sequence
     for batch_index, seq in enumerate(images):
-        batch_images = []  # List to hold images for creating the grid
+        batch_images = []  
         for frame_index, frame in enumerate(seq):
-            img = Image.fromarray(frame.astype('uint8'), 'L')  # Create a grayscale image
+            # Create a grayscale image
+            img = Image.fromarray(frame.astype('uint8'), 'L')  
             filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
             img.save(os.path.join(images_dir, filename))
             batch_images.append(img)
@@ -152,9 +150,6 @@ def export_images(images, result_dir, dataloader):
         else:
             print(f"No images to process in batch {batch_index}")
 
-    print(f"Images and image grids are saved in: {images_dir}")
-    return images  # Optionally return the array of images if needed elsewhere
-
 
 def get_network(options):
     
@@ -173,8 +168,7 @@ def get_network(options):
         return network
     else:
         raise FileNotFoundError("could not load file from checkpoint")
-    
-    
+     
 def ensure_directory_exists(filename):
     # Assume whatever comes after the last / is the filename
     tokens = filename.split('/')[:-1]
