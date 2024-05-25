@@ -8,7 +8,7 @@ import numpy as np
 import imutil
 from PIL import Image
 import pathlib
-from .datasets.datasets import EMNIST
+from ARPL.datasets.datasets import EMNIST
 import argparse
 
 
