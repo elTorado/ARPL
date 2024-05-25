@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
 from utils import AverageMeter
-from .generate import generate_arpl_images
+from ..models.generate import generate_arpl_images
 import pathlib
 import os
 

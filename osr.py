@@ -19,7 +19,7 @@ from datasets.datasets import EMNIST
 from datasets.osr_dataloader import MNIST_OSR
 from utils import Logger, save_networks, load_networks
 from core import train, train_cs, test, save_network
-from core.generate import generate_arpl_images
+from models.generate import generate_arpl_images
 
 
 parser = argparse.ArgumentParser("Training")
