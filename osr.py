@@ -19,8 +19,6 @@ from datasets.datasets import EMNIST
 from datasets.osr_dataloader import MNIST_OSR
 from utils import Logger, save_networks, load_networks
 from core import train, train_cs, test, save_network
-from models.generate import generate_arpl_images
-
 
 parser = argparse.ArgumentParser("Training")
 
@@ -170,10 +168,7 @@ def main_worker(options):
             save_network(netG, epoch=options["max_epoch"], result_dir=options["result_dir"])
        
         if options['stepsize'] > 0: scheduler.step()
-    
-    if options["generate"] == True:
-        iterations = options["number_images"]
-        images = generate_arpl_images(net,  netD, netG, iterations, trainloader, options)
+
     
     elapsed = round(time.time() - start_time)
     elapsed = str(datetime.timedelta(seconds=elapsed))

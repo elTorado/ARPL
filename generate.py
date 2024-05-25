@@ -57,9 +57,7 @@ def generate_arpl_images(netG, options):
 
     Data = EMNIST(options=options)
     trainloader = Data.train_loader
-    iterations = options["number_images"]
-    netG = get_network(netG, epoch=options.epochs, options=options)
-    
+    iterations = options["number_images"]    
     
     images = generate_images(netG, iterations, trainloader, options)
     
@@ -177,10 +175,11 @@ def export_images(images, result_dir, dataloader):
     return images  # Optionally return the array of images if needed elsewhere
 
 
-def get_network(network, epoch, options):
-    pth = get_pth_by_epoch(options['result_dir'], network, epoch)
+def get_network(options):
+    epoch = options["max-epoch"]
+    pth = get_pth_by_epoch(options['result_dir'], "netG", epoch)
     if pth:
-        print("Loading {} from checkpoint {}".format(network, pth))
+        print("Loading {} from checkpoint {}".format("netG", pth))
         network.load_state_dict(torch.load(pth))
     return network
 
@@ -204,3 +203,12 @@ def get_pth_by_epoch(result_dir, name, epoch=None):
     files = [os.path.join(checkpoint_path, fn) for fn in files]
     files.sort(key=lambda x: os.stat(x).st_mtime)
     return files[-1]
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    options = vars(args)
+    options['dataroot'] = os.path.join(options['dataroot'], options['dataset'])
+    
+    network = get_network(options=options)
+    generate_arpl_images(netG=network, options=options)
