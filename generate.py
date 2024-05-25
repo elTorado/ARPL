@@ -10,6 +10,8 @@ from PIL import Image
 import pathlib
 from datasets.datasets import EMNIST
 import argparse
+from models import gan
+
 
 
 parser = argparse.ArgumentParser("Generating Images")
@@ -176,11 +178,15 @@ def export_images(images, result_dir, dataloader):
 
 
 def get_network(options):
+    
+    nz, ns = options['nz'], 1
+    network = gan.Generator32(1, nz, 64, 1)
+    
     epoch = options["max_epoch"]
     pth = get_pth_by_epoch(options['result_dir'], "netG", epoch)
     if pth:
         print("Loading {} from checkpoint {}".format("netG", pth))
-        network = network.load_state_dict(torch.load(pth))
+        network.load_state_dict(torch.load(pth))
         return network
     else:
         raise FileNotFoundError("could not load file from checkpoint")
