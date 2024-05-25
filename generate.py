@@ -23,7 +23,7 @@ parser.add_argument('--outf', type=str, default='./log')
 parser.add_argument('--batch-size', type=int, default=64)
 parser.add_argument('--lr', type=float, default=0.1, help="learning rate for model")
 parser.add_argument('--gan_lr', type=float, default=0.0002, help="learning rate for gan")
-parser.add_argument('--max-epoch', type=int, default=1, help='Maximum number of epochs')
+parser.add_argument('--max_epoch', type=int, default=1, help='Maximum number of epochs')
 parser.add_argument('--stepsize', type=int, default=30)
 parser.add_argument('--temp', type=float, default=1.0, help="temp")
 parser.add_argument('--num-centers', type=int, default=1)
@@ -176,7 +176,7 @@ def export_images(images, result_dir, dataloader):
 
 
 def get_network(options):
-    epoch = options["max-epoch"]
+    epoch = options["max_epoch"]
     pth = get_pth_by_epoch(options['result_dir'], "netG", epoch)
     if pth:
         print("Loading {} from checkpoint {}".format("netG", pth))
@@ -209,8 +209,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     options = vars(args)
     options['dataroot'] = os.path.join(options['dataroot'], options['dataset'])
-    
-    print(options)
-    
+
     network = get_network(options=options)
     generate_arpl_images(netG=network, options=options)
