@@ -179,7 +179,7 @@ def main_worker(options):
     elapsed = str(datetime.timedelta(seconds=elapsed))
     print("Finished. Total elapsed time (h:m:s): {}".format(elapsed))
 
-    return results
+    print("DONE")
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -210,10 +210,11 @@ if __name__ == '__main__':
 
     file_name = "emnist" + '.csv'
     
-    res = main_worker(options)
-    res['unknown'] = unknown
+    main_worker(options)
+    
+    '''res['unknown'] = unknown
     res['known'] = known
     results["EMNIST"] = res
     df = pd.DataFrame(results)
     df.to_csv(os.path.join(dir_path, file_name))
-    print("saved csv to: ", os.path.join(dir_path, file_name))
+    print("saved csv to: ", os.path.join(dir_path, file_name))'''
