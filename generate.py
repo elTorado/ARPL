@@ -180,7 +180,7 @@ def get_network(options):
     pth = get_pth_by_epoch(options['result_dir'], "netG", epoch)
     if pth:
         print("Loading {} from checkpoint {}".format("netG", pth))
-        network.load_state_dict(torch.load(pth))
+        network = network.load_state_dict(torch.load(pth))
     return network
 
 def ensure_directory_exists(filename):
