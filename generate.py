@@ -75,9 +75,9 @@ def generate_images(netG, iterations, trainloader, options):
     torch.cuda.empty_cache()
     
     
-    images = []  # Use a list to collect tensors
+    images = []  
     for _ in range(iterations):
-        total_batches = len(trainloader)  # Total number of batches
+        total_batches = len(trainloader)  
         random_index = random.randint(0, total_batches - 1) 
         for i, (data, label) in enumerate(trainloader):
             if i == random_index:
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     options = vars(args)
     
     # FOR NOW HAVE THIS HARDCODED
-    options.update({'use_gpu':  False})
+    options.update({'use_gpu':  True})
     options['dataroot'] = os.path.join(options['dataroot'], options['dataset'])
 
     network = get_network(options=options)
