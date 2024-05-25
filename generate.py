@@ -185,7 +185,8 @@ def get_network(options):
     epoch = options["max_epoch"]
     pth = get_pth_by_epoch(options['result_dir'], "netG", epoch)
     if pth:
-        print("Loading {} from checkpoint {}".format("netG", pth)) 
+        print("Loading {} from checkpoint {}".format("netG", pth))
+ 
         state_dict = torch.load(pth)     
         # For some reason there is a "module" prefix to the keys that is not expected in the network init"
         state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
@@ -221,6 +222,9 @@ def get_pth_by_epoch(result_dir, name, epoch=None):
 if __name__ == '__main__':
     args = parser.parse_args()
     options = vars(args)
+    
+    # FOR NOW HAVE THIS HARDCODED
+    options.update({'use_gpu':  False})
     options['dataroot'] = os.path.join(options['dataroot'], options['dataset'])
 
     network = get_network(options=options)
