@@ -188,9 +188,11 @@ def get_network(options):
         print("Loading {} from checkpoint {}".format("netG", pth))
         
         print( "PRINTING OUT PTH CONTENT")
-        print(torch.load(pth))
+        state_dict = torch.load(pth)
+        for key in state_dict:
+            print(key)
         
-        network.load_state_dict(torch.load(pth))
+        network.load_state_dict(state_dict)
         return network
     else:
         raise FileNotFoundError("could not load file from checkpoint")
