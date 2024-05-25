@@ -133,16 +133,14 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
 
     return loss_all, netG
 
-def ensure_directory_exists(filename):
-    # Assume whatever comes after the last / is the filename
-    tokens = filename.split('/')[:-1]
-    # Perform a mkdir -p on the rest of the path
-    path = '/'.join(tokens)
-    pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+def ensure_directory_exists(path):
+    directory = os.path.dirname(path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     
 def save_network(network, epoch, result_dir):
     weights = network.state_dict()
-    filename = '{}/checkpoints/{}_epoch_{:04d}.pth'.format(result_dir, network, epoch)
+    filename = '{}/checkpoints/{}_epoch_{:04d}.pth'.format(result_dir, "netG", epoch)
     print(f"Attempting to save weights to: {filename}")  # Shows the full path attempting to save to
     
     # Ensure the directory exists
