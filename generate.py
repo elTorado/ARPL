@@ -187,6 +187,7 @@ def get_network(options):
     if pth:
         print("Loading {} from checkpoint {}".format("netG", pth))
         
+        print( "PRINTING OUT PTH CONTENT")
         print(pth)
         
         network.load_state_dict(torch.load(pth))
