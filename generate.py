@@ -116,27 +116,6 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
     return video_filename
 
 
-'''
-def export_images(images, result_dir, dataloader):
-    # Convert to numpy and remove singleton dimension
-    images = images.data.cpu().numpy().squeeze(2)  # Shape should now be (5, 64, 32, 32)
-
-    # Prepare directory for saving images
-    images_dir = os.path.join(result_dir, 'images')
-    if not os.path.exists(images_dir):
-        os.makedirs(images_dir)
-
-    # Process each image in the batch and sequence
-    for batch_index, seq in enumerate(images):
-        for frame_index, frame in enumerate(seq):
-            img = Image.fromarray(frame.astype('uint8'), 'L')  # Create a grayscale image
-            filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
-            img.save(os.path.join(images_dir, filename))
-            
-    print(f"Images are saved in: {images_dir}")
-    return images  # Return the array of images (optional, depending on further needs)
-'''
-
 def export_images(images, result_dir, dataloader):
     # Convert to numpy and remove singleton dimension
     images = images.data.cpu().numpy().squeeze(2)  # Shape should now be (5, 64, 32, 32)
@@ -228,4 +207,6 @@ if __name__ == '__main__':
     options['dataroot'] = os.path.join(options['dataroot'], options['dataset'])
 
     network = get_network(options=options)
+    network = network.cuda()
+    
     generate_arpl_images(netG=network, options=options)
