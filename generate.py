@@ -181,8 +181,11 @@ def get_network(options):
     if pth:
         print("Loading {} from checkpoint {}".format("netG", pth))
         network = network.load_state_dict(torch.load(pth))
-    return network
-
+        return network
+    else:
+        raise FileNotFoundError("could not load file from checkpoint")
+    
+    
 def ensure_directory_exists(filename):
     # Assume whatever comes after the last / is the filename
     tokens = filename.split('/')[:-1]
