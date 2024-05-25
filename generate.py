@@ -206,19 +206,15 @@ def ensure_directory_exists(filename):
 def get_pth_by_epoch(result_dir, name, epoch=None):
     checkpoint_path = os.path.join(result_dir, 'checkpoints/')
     ensure_directory_exists(checkpoint_path)
-    print(f"Listing files in {checkpoint_path}")  # Debugging print
     files = os.listdir(checkpoint_path)
-    print(f"Found files: {files}")  # Debugging print
     suffix = '.pth'
     if epoch is not None:
         suffix = f'_epoch_{epoch:04d}.pth'
     target_files = [f for f in files if name in f and f.endswith(suffix)]
-    print(f"Filtered target files: {target_files}")  # Debugging print
     if not target_files:
         return None
     full_paths = [os.path.join(checkpoint_path, fn) for fn in target_files]
     full_paths.sort(key=lambda x: os.stat(x).st_mtime, reverse=True)
-    print(f"Sorted files by modification time: {full_paths}")  # Debugging print
     return full_paths[0] if full_paths else None
 
 
