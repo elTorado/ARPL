@@ -56,7 +56,7 @@ parser.add_argument('--number_images', type= int, help="number of images to crea
 
 def generate_arpl_images(netG, options):
 
-    Data = EMNIST(options=options)
+    Data = EMNIST(options=options, val = False, test = False)
     trainloader = Data.train_loader
     iterations = options["number_images"]    
     
@@ -186,7 +186,7 @@ def get_network(options):
         state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
         network.load_state_dict(state_dict)
         
-        # network = device(network) 
+        network = device(network) 
            
         return network
     else:

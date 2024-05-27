@@ -40,8 +40,8 @@ class CustomEMNIST(torch.utils.data.dataset.Dataset):
         # Return the data with label -1
         return data, -1
 
-class EMNIST(torch.utils.data.dataset.Dataset):
-    
+class EMNIST(torch.utils.data.dataset.Dataset, val = True, Test = True):
+  
     
     ''' IS ZERO PADDING NECESSARY AS WE CAN CHOOSE AN IMAGE SIZE??'''
     
@@ -83,37 +83,43 @@ class EMNIST(torch.utils.data.dataset.Dataset):
             transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
         )
         
-        self.valdata = torchvision.datasets.EMNIST(
-            root=self.dataset_root,
-            train=False,
-            download=True,
-            split="mnist",
-            transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
-        )
-        
-        self.letters = CustomEMNIST(
-            root=self.dataset_root,
-            transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform  ])
-        )
-        
         self.train_loader = torch.utils.data.DataLoader(
             self.traindata, batch_size=self.batch_size, shuffle=True,
             num_workers=self.workers, pin_memory=self.pin_memory,
         )
         
-        self.test_loader = torch.utils.data.DataLoader(
+        print("TRAINING LABELS: ", EMNIST.get_labels(self.train_loader))
+
+        if EMNIST.val:
+            self.valdata = torchvision.datasets.EMNIST(
+                root=self.dataset_root,
+                train=False,
+                download=True,
+                split="mnist",
+                transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
+            )
+            print("TEST LABELS: ", EMNIST.get_labels(self.test_loader))
+            self.test_loader = torch.utils.data.DataLoader(
             self.valdata, batch_size=self.batch_size, shuffle=False,
             num_workers=self.workers, pin_memory=self.pin_memory,
-        )
+            )
         
-        self.out_loader = torch.utils.data.DataLoader(
+        if EMNIST.test:
+            self.letters = CustomEMNIST(
+                root=self.dataset_root,
+                transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform  ])
+            )
+            print("OPEN SET LABELS: ", EMNIST.get_labels(self.out_loader))
+            self.out_loader = torch.utils.data.DataLoader(
             self.letters, batch_size=self.batch_size, shuffle=True, 
             num_workers=self.workers,  pin_memory=self.pin_memory,
-        )
+            )
+    
+        
+
+        
+
                
-        print("TRAINING LABELS: ", EMNIST.get_labels(self.train_loader))
-        print("TEST LABELS: ", EMNIST.get_labels(self.test_loader))
-        print("OPEN SET LABELS: ", EMNIST.get_labels(self.out_loader))
                 
                 
         def __getitem__(self, index):
