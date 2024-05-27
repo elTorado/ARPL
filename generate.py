@@ -11,8 +11,7 @@ import pathlib
 from datasets.datasets import EMNIST
 import argparse
 from models import gan
-
-
+from vast.tools import set_device_gpu, set_device_cpu, device
 
 parser = argparse.ArgumentParser("Generating Images")
 
@@ -68,7 +67,18 @@ def generate_arpl_images(netG, options):
     print("DONE")
 
 def generate_images(netG, iterations, trainloader, options):
+    
+    # setup device
+    if options['use_gpu'] is not None:
+        set_device_gpu(index=options['gpu'] )
+        print(" ============== GPU Selected! =============")
+    else:
+        print("No GPU device selected, training will be extremely slow")
+        set_device_cpu()
+    
     netG.train()
+    netG = device(netG)
+
     torch.cuda.empty_cache()
      
     images = []  
@@ -82,13 +92,13 @@ def generate_images(netG, iterations, trainloader, options):
         #select a rondom batch from the trainloader
             
         noise = torch.FloatTensor(start_images.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
-        if options['use_gpu']:
-            noise = noise.cuda()
-            start_images = start_images.cuda()
+        noise = Variable(noise)
+        noise = device(noise)
+        start_images = device(start_images)
 
         
         #create fake data from generator
-        noise = Variable(noise)
+        
         fake = netG(noise)
         images.append(fake.cpu().detach())  # Append to list and ensure tensor is on CPU and detached
         

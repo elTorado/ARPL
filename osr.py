@@ -18,7 +18,7 @@ from models.models import classifier32, classifier32ABN
 from datasets.datasets import EMNIST
 from datasets.osr_dataloader import MNIST_OSR
 from utils import Logger, save_networks, load_networks
-from core import train, train_cs, test, save_network
+from core import train_cs, test, save_network
 
 parser = argparse.ArgumentParser("Training")
 

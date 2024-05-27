@@ -4,61 +4,49 @@ from torch.autograd import Variable
 from utils import AverageMeter
 import pathlib
 import os
-
-def train(net, criterion, optimizer, trainloader, epoch=None, **options):
-    net.train()
-    losses = AverageMeter()
-
-    torch.cuda.empty_cache()
-    
-    loss_all = 0
-    for batch_idx, (data, labels) in enumerate(trainloader):
-        if options['use_gpu']:
-            data, labels = data.cuda(), labels.cuda()
-        
-        with torch.set_grad_enabled(True):
-            optimizer.zero_grad()
-            x, y = net(data, True)
-            logits, loss = criterion(x, y, labels)
-            
-            loss.backward()
-            optimizer.step()
-        
-        losses.update(loss.item(), labels.size(0))
-
-        if (batch_idx+1) % options['print_freq'] == 0:
-            print("Batch {}/{}\t Loss {:.6f} ({:.6f})" \
-                  .format(batch_idx+1, len(trainloader), losses.val, losses.avg))
-        
-        loss_all += losses.avg
-
-    return loss_all
+from vast.tools import set_device_gpu, set_device_cpu, device
 
 def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, optimizerG, 
         trainloader, epoch=None, **options):
     print('train with confusing samples')
+    
+    # setup device
+    if options['use_gpu'] is not None:
+        set_device_gpu(index=options['gpu'] )
+        print(" ============== GPU Selected! =============")
+    else:
+        print("No GPU device selected, training will be extremely slow")
+        set_device_cpu()
+    
     losses, lossesG, lossesD = AverageMeter(), AverageMeter(), AverageMeter()
 
     net.train()
     netD.train()
     netG.train()
-
+    net = device(net)
+    netD = device(netD)
+    netG = device(netG)
+    
     torch.cuda.empty_cache()
     
     loss_all, real_label, fake_label = 0, 1, 0
     for batch_idx, (data, labels) in enumerate(trainloader):
         gan_target = torch.FloatTensor(labels.size()).fill_(0)
-        if options['use_gpu']:
-            data = data.cuda(non_blocking=True)
-            labels = labels.cuda(non_blocking=True)
-            gan_target = gan_target.cuda()
         
+
+            
         data, labels = Variable(data), Variable(labels)
         
+        data = device(data)
+        labels = device(labels)
+        gan_target = device(gan_target)
+        
+        
         noise = torch.FloatTensor(data.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
-        if options['use_gpu']:
-            noise = noise.cuda()
+
         noise = Variable(noise)
+        noise = device(noise)
+        
         fake = netG(noise)
 
         ###########################
@@ -110,9 +98,9 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
 
         # KL divergence
         noise = torch.FloatTensor(data.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
-        if options['use_gpu']:
-            noise = noise.cuda()
         noise = Variable(noise)
+        noise = device(noise)
+        
         fake = netG(noise)
         x, y = net(fake, True, 1 * torch.ones(data.shape[0], dtype=torch.long).cuda())
         F_loss_fake = criterion.fake_loss(x).mean()
