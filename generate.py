@@ -226,6 +226,5 @@ if __name__ == '__main__':
     options['dataroot'] = os.path.join(options['dataroot'], options['dataset'])
 
     network = get_network(options=options)
-    network = network.cuda()
     
     generate_arpl_images(netG=network, options=options)
