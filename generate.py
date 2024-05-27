@@ -187,9 +187,6 @@ def get_network(options):
         network.load_state_dict(state_dict)
         
         network = device(network)    
-        
-       
-        network.load_state_dict(state_dict)
         return network
     else:
         raise FileNotFoundError("could not load file from checkpoint")
