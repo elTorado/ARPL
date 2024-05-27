@@ -69,15 +69,16 @@ def generate_arpl_images(netG, options):
 def generate_images(netG, iterations, trainloader, options):
     
     # setup device
-    if options['use_gpu'] is not None:
+    ''' if options['use_gpu'] is not None:
         set_device_gpu(index=options['gpu'] )
         print(" ============== GPU Selected! =============")
     else:
         print("No GPU device selected, training will be extremely slow")
         set_device_cpu()
-    
+    '''
     netG.train()
-    netG = device(netG)
+    
+    # netG = device(netG)
 
     torch.cuda.empty_cache()
      
@@ -93,8 +94,8 @@ def generate_images(netG, iterations, trainloader, options):
             
         noise = torch.FloatTensor(start_images.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
         noise = Variable(noise)
-        noise = device(noise)
-        start_images = device(start_images)
+        # noise = device(noise)
+        # start_images = device(start_images)
 
         
         #create fake data from generator
