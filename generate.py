@@ -172,9 +172,14 @@ def get_network(options):
     if pth:
         print("Loading {} from checkpoint {}".format("netG", pth))
  
-        state_dict = torch.load(pth)     
+        state_dict = torch.load(pth, map_location=torch.device('cpu'))
+        # Move to GPU if necessary after some operations or checks
         # For some reason there is a "module" prefix to the keys that is not expected in the network init"
         state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
+        network.load_state_dict(state_dict)
+        network.to('cuda')     
+        
+       
         network.load_state_dict(state_dict)
         return network
     else:
