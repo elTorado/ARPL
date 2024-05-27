@@ -103,6 +103,10 @@ def generate_images(netG, iterations, trainloader, options):
         fake = netG(noise)
         images.append(fake.cpu().detach())  # Append to list and ensure tensor is on CPU and detached
         
+        if _ % 100 == 0:
+            print("CREATED " + str(_)+ " IMAGES")
+
+        
     # Convert list of tensors to a single tensor
     images_tensor = torch.stack(images)
     '''# NumPy array:
