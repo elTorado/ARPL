@@ -40,7 +40,7 @@ class CustomEMNIST(torch.utils.data.dataset.Dataset):
         # Return the data with label -1
         return data, -1
 
-class EMNIST(torch.utils.data.dataset.Dataset, val = True, Test = True):
+class EMNIST(torch.utils.data.dataset.Dataset):
   
     
     ''' IS ZERO PADDING NECESSARY AS WE CAN CHOOSE AN IMAGE SIZE??'''
@@ -62,7 +62,7 @@ class EMNIST(torch.utils.data.dataset.Dataset, val = True, Test = True):
                 unique_labels.update(labels.numpy())
             return unique_labels
                 
-    def __init__(self, **options):
+    def __init__(self, val = True, test = True,**options):
         
         options=options['options']
 
@@ -90,7 +90,7 @@ class EMNIST(torch.utils.data.dataset.Dataset, val = True, Test = True):
         
         print("TRAINING LABELS: ", EMNIST.get_labels(self.train_loader))
 
-        if EMNIST.val:
+        if val:
             self.valdata = torchvision.datasets.EMNIST(
                 root=self.dataset_root,
                 train=False,
@@ -104,7 +104,7 @@ class EMNIST(torch.utils.data.dataset.Dataset, val = True, Test = True):
             num_workers=self.workers, pin_memory=self.pin_memory,
             )
         
-        if EMNIST.test:
+        if test:
             self.letters = CustomEMNIST(
                 root=self.dataset_root,
                 transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform  ])
