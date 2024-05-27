@@ -69,13 +69,13 @@ def generate_arpl_images(netG, options):
 def generate_images(netG, iterations, trainloader, options):
     
     # setup device
-    if options['use_gpu'] is not None:
+    '''if options['use_gpu'] is not None:
         set_device_gpu(index=options['gpu'] )
         print(" ============== GPU Selected! =============")
     else:
         print("No GPU device selected, training will be extremely slow")
         set_device_cpu()
-    
+    '''
     netG.train()
     
     # netG = device(netG)
