@@ -94,8 +94,8 @@ def generate_images(netG, iterations, trainloader, options):
             
         noise = torch.FloatTensor(start_images.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
         noise = Variable(noise)
-        noise = device(noise)
-        start_images = device(start_images)
+        #noise = device(noise)
+        #start_images = device(start_images)
 
         
         #create fake data from generator
