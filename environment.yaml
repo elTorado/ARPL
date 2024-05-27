@@ -25,5 +25,6 @@ dependencies:
     - libMR
     - robustness>=1.2.1.post2
     - tensorboard
+    - git+http://github.com/lwneal/imutil
     - git+https://github.com/Vastlab/vast.git
     - -e .
