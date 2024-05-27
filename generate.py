@@ -84,8 +84,7 @@ def generate_images(netG, iterations, trainloader, options):
      
     images = []  
     for _ in range(iterations):
-        total_batches = len(trainloader)
-        print("AMOUNT OF BATCHES AVAILABLE: ", total_batches)  
+        total_batches = len(trainloader)  
         random_index = random.randint(0, total_batches - 1) 
         
         #select a rondom batch from the trainloader
