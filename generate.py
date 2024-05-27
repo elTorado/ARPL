@@ -78,7 +78,7 @@ def generate_images(netG, iterations, trainloader, options):
     
     netG.train()
     
-    netG = device(netG)
+    # netG = device(netG)
 
     torch.cuda.empty_cache()
      
