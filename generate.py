@@ -84,14 +84,21 @@ def generate_images(netG, iterations, trainloader, options):
      
     images = []  
     for _ in range(iterations):
-        total_batches = len(trainloader)  
+        total_batches = len(trainloader)
+        print("AMOUNT OF BATCHES AVAILABLE: ", total_batches)  
         random_index = random.randint(0, total_batches - 1) 
+        
+        #select a rondom batch from the trainloader
         for i, (data, label) in enumerate(trainloader):
             if i == random_index:
                 start_images = data        
                 break
-        #select a rondom batch from the trainloader
-            
+        
+        
+        # Skip batches that do not match the expected size
+        if data.size(0) != 64:
+            continue  
+        
         noise = torch.FloatTensor(start_images.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1)
         noise = Variable(noise)
         noise = device(noise)
@@ -104,7 +111,7 @@ def generate_images(netG, iterations, trainloader, options):
         images.append(fake.cpu().detach())  # Append to list and ensure tensor is on CPU and detached
         
         if _ % 100 == 0:
-            print("CREATED " + str(_)+ " IMAGES")
+            print("CREATED " + str(_ * 64)+ " IMAGES")
 
         
     # Convert list of tensors to a single tensor
