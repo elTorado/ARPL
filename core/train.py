@@ -12,7 +12,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
     
     # setup device
     if options['use_gpu'] is not None:
-        set_device_gpu(index=options['gpu'] )
+        set_device_gpu(int(index=options['gpu']))
         print(" ============== GPU Selected! =============")
     else:
         print("No GPU device selected, training will be extremely slow")
