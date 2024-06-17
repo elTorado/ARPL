@@ -28,6 +28,8 @@ parser.add_argument('--dataset', type=str, default='mnist', help="mnist | svhn |
 parser.add_argument('--dataroot', type=str, default='/home/user/heizmann/data/EMNIST/')
 parser.add_argument('--outf', type=str, default='./log')
 parser.add_argument('--out-num', type=int, default=50, help='For CIFAR100')
+parser.add_argument('--protocol', type=int, default=2, help='imagenet protocol')
+
 
 # optimization
 parser.add_argument('--batch-size', type=int, default=64)
