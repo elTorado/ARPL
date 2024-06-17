@@ -12,12 +12,17 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
     
     # setup device
     if options['use_gpu'] is not None:
-        set_device_gpu(int(index=options['gpu']))
+        print("Available GPU indexes and their names:")
+        for i in range(torch.cuda.device_count()):
+            print(f"Index {i}: {torch.cuda.get_device_name(i)}")  # Print each available GPU index and its name
+
+        print(f"Selected GPU Index from options: {options['gpu']}")
+        set_device_gpu(index=options['gpu'])
         print(" ============== GPU Selected! =============")
     else:
         print("No GPU device selected, training will be extremely slow")
         set_device_cpu()
-    
+        
     losses, lossesG, lossesD = AverageMeter(), AverageMeter(), AverageMeter()
 
     net.train()
