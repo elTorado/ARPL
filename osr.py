@@ -105,7 +105,7 @@ def main_worker(options):
             transforms.CenterCrop(224),
             transforms.ToTensor()])
         
-        train_file = pathlib.Path(train_file.format(options["protocol"])),
+        train_file = pathlib.Path(train_file.format(options["protocol"]))
         
         print("TRAIN FILE PATH: ", train_file)
         
