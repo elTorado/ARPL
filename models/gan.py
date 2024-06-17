@@ -200,12 +200,12 @@ def Generator256(n_gpu, nz, ngf, nc):
     return model
 
 def Discriminator32(n_gpu, nc, ndf):
-    model = _netD256(n_gpu, nc, ndf)
+    model = _netD32(n_gpu, nc, ndf)
     model.apply(weights_init)
     return model
 
 def Discriminator256(n_gpu, nc, ndf):
-    model = _netD32(n_gpu, nc, ndf)
+    model = _netD256(n_gpu, nc, ndf)
     model.apply(weights_init)
     return model
 
