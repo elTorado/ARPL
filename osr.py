@@ -91,7 +91,8 @@ def main_worker(options):
     if 'emnist' in options['dataset']:
         Data = EMNIST(options=options)
         trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
-    
+        options['num_classes'] = Data.num_classes
+        
     if 'imagenet' in options['dataset']:
         
         train_tr = transforms.Compose(
@@ -117,8 +118,10 @@ def main_worker(options):
             transform=train_tr
         )
         
+        options['num_classes'] = trainloader.label_count
+        
 
-    options['num_classes'] = Data.num_classes
+    
 
     # Model
     print("Creating model: {}".format(options['model']))
