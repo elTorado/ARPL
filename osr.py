@@ -5,7 +5,8 @@ import time
 import csv
 import pandas as pd
 import importlib
-
+from torchvision import transforms
+import pathlib
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,7 +16,7 @@ import torch.backends.cudnn as cudnn
 
 from models import gan
 from models.models import classifier32, classifier32ABN
-from datasets.datasets import EMNIST
+from datasets.datasets import EMNIST, ImageNet
 from datasets.osr_dataloader import MNIST_OSR
 from utils import Logger, save_networks, load_networks
 from core import train_cs, test, save_network
@@ -65,6 +66,9 @@ def main_worker(options):
     
     #options['dataroot'] = '/home/deanheizmann/dataset/emnist'
     options['dataroot'] = '/home/user/heizmann/dataset/emnist'
+    
+    imagenet_path = '/local/scratch/datasets/ImageNet/ILSVRC2012/'
+    train_file = 'protocols/p{}_train.csv'
 
     
     torch.manual_seed(options['seed'])
@@ -85,6 +89,29 @@ def main_worker(options):
     if 'emnist' in options['dataset']:
         Data = EMNIST(options=options)
         trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
+    
+    if 'imagenet' in options['dataset']:
+        
+        train_tr = transforms.Compose(
+            [transforms.Resize(256),
+            transforms.RandomCrop(224),
+            transforms.RandomHorizontalFlip(0.5),
+            transforms.ToTensor()])
+
+        val_tr = transforms.Compose(
+            [transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor()])
+        
+        train_file = pathlib.Path(train_file.format(options.protocol)),
+        imagenet_path= imagenet_path
+        
+        trainloader = ImageNet(
+            csv_file=train_file,
+            imagenet_path=imagenet_path,
+            transform=train_tr
+        )
+        
 
     options['num_classes'] = Data.num_classes
 
@@ -100,10 +127,17 @@ def main_worker(options):
         print("Creating GAN")
         nz, ns = options['nz'], 1
 
-        netG = gan.Generator32(1, nz, 64, 1)
-        netD = gan.Discriminator32(1, 1, 64)
-        fixed_noise = torch.FloatTensor(64, nz, 1, 1).normal_(0, 1)
-        criterionD = nn.BCELoss()
+        if 'imagenet' in options['dataset']:
+            netG = gan.Generator256(1, nz, 64, 1)
+            netD = gan.Discriminator256(1, 1, 64)
+            fixed_noise = torch.FloatTensor(64, nz, 1, 1).normal_(0, 1)
+            criterionD = nn.BCELoss()
+            
+        else: 
+            netG = gan.Generator32(1, nz, 64, 1)
+            netD = gan.Discriminator32(1, 1, 64)
+            fixed_noise = torch.FloatTensor(64, nz, 1, 1).normal_(0, 1)
+            criterionD = nn.BCELoss()
 
     # Loss
     options.update(

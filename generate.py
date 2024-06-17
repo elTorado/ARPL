@@ -93,7 +93,6 @@ def generate_images(netG, iterations, trainloader, options):
                 start_images = data        
                 break
         
-        
         # Skip batches that do not match the expected size
         if data.size(0) != 64:
             continue  
@@ -102,8 +101,7 @@ def generate_images(netG, iterations, trainloader, options):
         noise = Variable(noise)
         noise = device(noise)
         start_images = device(start_images)
-
-        
+     
         #create fake data from generator
         
         fake = netG(noise)

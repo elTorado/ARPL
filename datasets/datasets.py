@@ -6,7 +6,8 @@ from torchvision.datasets import ImageFolder
 from torch.nn import functional as F
 import torchvision.transforms as transforms
 from torchvision.datasets import MNIST, KMNIST
-
+import pandas as pd
+from pathlib import Path
 import numpy as np
 from PIL import Image
 from utils import mkdir_if_missing
@@ -41,7 +42,6 @@ class CustomEMNIST(torch.utils.data.dataset.Dataset):
         return data, -1
 
 class EMNIST(torch.utils.data.dataset.Dataset):
-  
     
     ''' IS ZERO PADDING NECESSARY AS WE CAN CHOOSE AN IMAGE SIZE??'''
     
@@ -133,6 +133,50 @@ class EMNIST(torch.utils.data.dataset.Dataset):
                 target = self.target_transform(target)
 
             return img, target
+  
+class ImageNet(torch.utils.data.dataset.Dataset):
+    
+    def __init__(self, csv_file, imagenet_path, transform = None):
+        
+        self.dataset = pd.read_csv(csv_file, header=None)
+        
+        # for GAN training we dont want any negatives as we want to create synthetic negatives from known classes
+        self.dataset = self.dataset[self.dataset[1] != -1]
+        
+        self.imagenet_path = Path(imagenet_path)
+        self.transform = transform
+        self.label_count = len(self.dataset[1].unique())
+        self.unique_classes = np.sort(self.dataset[1].unique())
+        
+    def __len__(self):
+        """Returns the length of the dataset. """
+        return len(self.dataset)
+
+    def __getitem__(self, index):
+        """ Returns a tuple (image, label) of the dataset at the given index. If available, it
+        applies the defined transform to the image. Images are converted to RGB format.
+
+        Args:
+            index(int): Image index
+
+        Returns:
+            image, label: (image tensor, label tensor)
+        """
+        if torch.is_tensor(index):
+            index = index.tolist()
+
+        jpeg_path, label = self.dataset.iloc[index]
+        image = Image.open(self.imagenet_path / jpeg_path).convert("RGB")
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        # convert int label to tensor
+        label = torch.as_tensor(int(label), dtype=torch.int64)
+        return image, label
+
+  
+  
         
 class MNIST(object):
     def __init__(self, **options):

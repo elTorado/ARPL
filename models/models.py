@@ -154,7 +154,7 @@ class classifier32ABN(nn.Module):
     def __init__(self, num_classes=10, num_ABN=2):
         super(self.__class__, self).__init__()
         self.num_classes = num_classes
-        self.conv1 = nn.Conv2d(1,       64,     3, 1, 1, bias=False)
+        self.conv1 = nn.Conv2d(3,       64,     3, 1, 1, bias=False)
         self.conv2 = nn.Conv2d(64,      64,     3, 1, 1, bias=False)
         self.conv3 = nn.Conv2d(64,     128,     3, 2, 1, bias=False)
 

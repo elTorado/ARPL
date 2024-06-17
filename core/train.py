@@ -32,16 +32,18 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
     loss_all, real_label, fake_label = 0, 1, 0
     for batch_idx, (data, labels) in enumerate(trainloader):
         gan_target = torch.FloatTensor(labels.size()).fill_(0)
-        
 
-            
         data, labels = Variable(data), Variable(labels)
         
         data = device(data)
         labels = device(labels)
         gan_target = device(gan_target)
         
-        
+        ''' 
+        ns: noise size - hight and weight of noise, spatial dimension
+        nz: noise dimension - dimensions of latent space
+        '''
+            
         noise = torch.FloatTensor(data.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
 
         noise = Variable(noise)
@@ -87,6 +89,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
         lossesG.update(generator_loss.item(), labels.size(0))
         lossesD.update(errD.item(), labels.size(0))
 
+        '''
 
         ###########################
         # (3) Update classifier   #
@@ -114,7 +117,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
             print("Batch {}/{}\t Net {:.3f} ({:.3f}) G {:.3f} ({:.3f}) D {:.3f} ({:.3f})" \
             .format(batch_idx+1, len(trainloader), losses.val, losses.avg, lossesG.val, lossesG.avg, lossesD.val, lossesD.avg))
     
-    
+        '''
         loss_all += losses.avg
 
 
