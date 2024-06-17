@@ -106,6 +106,9 @@ def main_worker(options):
             transforms.ToTensor()])
         
         train_file = pathlib.Path(train_file.format(options["protocol"])),
+        
+        print("TRAIN FILE PATH: ", train_file)
+        
         imagenet_path= imagenet_path
         
         trainloader = ImageNet(
