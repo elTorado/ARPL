@@ -136,8 +136,10 @@ def main_worker(options):
         nz, ns = options['nz'], 1
 
         if 'imagenet' in options['dataset']:
-            netG = gan.Generator256(1, nz, 64, 1)
-            netD = gan.Discriminator256(1, 1, 64)
+                        
+            # nc is input amount of input channels
+            netG = gan.Generator256(1, nz, 64, 3)
+            netD = gan.Discriminator256(n_gpu=1, nc= 3, ndf=64)
             fixed_noise = torch.FloatTensor(64, nz, 1, 1).normal_(0, 1)
             criterionD = nn.BCELoss()
             
