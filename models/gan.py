@@ -90,11 +90,12 @@ class _netD256(nn.Module):
             nn.BatchNorm2d(ndf * 16),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*16) x 8 x 8
-            nn.Conv2d(ndf * 16, ndf * 32, 4, 2, 1, bias=False),
+            # HERE KERNEL SIZE BECOMES LESS THAN 4
+            nn.Conv2d(ndf * 16, ndf * 32, 3, 2, 1, bias=False),
             nn.BatchNorm2d(ndf * 32),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*32) x 4 x 4
-            nn.Conv2d(ndf * 32, ndf * 64, 4, 1, 0, bias=False),
+            nn.Conv2d(ndf * 32, ndf * 64, 3, 1, 0, bias=False),
             nn.BatchNorm2d(ndf * 64),
             nn.LeakyReLU(0.2, inplace=True)
             # state size. (ndf*64) x 3 x 3 (slightly different due to kernel and padding)
