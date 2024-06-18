@@ -112,11 +112,18 @@ def main_worker(options):
         
         imagenet_path= imagenet_path
         
-        trainloader = ImageNet(
+        train_data = ImageNet(
             csv_file=train_file,
             imagenet_path=imagenet_path,
             transform=train_tr
         )
+        
+        trainloader = torch.utils.data.DataLoader(
+            train_data,
+            batch_size=options["batch-size"],
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True)
         
         options['num_classes'] = trainloader.label_count
 
