@@ -125,7 +125,7 @@ def main_worker(options):
             num_workers=4,
             pin_memory=True)
         
-        options['num_classes'] = trainloader.label_count
+        options['num_classes'] = train_data.label_count
 
     # Model
     print("Creating model: {}".format(options['model']))
