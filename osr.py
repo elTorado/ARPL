@@ -138,6 +138,13 @@ def main_worker(options):
         if 'imagenet' in options['dataset']:
                         
             # nc is input amount of input channels
+            nz = 100 # default in params anyway, for debugging
+            
+            '''1 is the number of GPUs.
+                nz = 100 is the number of channels in the input noise vector.
+                64 (ngf) is the factor that determines the size of feature maps in deeper layers.
+                3 (nc) is the intended number of output channels, typically corresponding to RGB image channels.'''
+                
             netG = gan.Generator256(1, nz, 64, 3)
             netD = gan.Discriminator256(n_gpu=1, nc= 3, ndf=64)
             fixed_noise = torch.FloatTensor(64, nz, 1, 1).normal_(0, 1)
