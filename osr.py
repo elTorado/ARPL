@@ -119,9 +119,6 @@ def main_worker(options):
         )
         
         options['num_classes'] = trainloader.label_count
-        
-
-    
 
     # Model
     print("Creating model: {}".format(options['model']))

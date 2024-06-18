@@ -74,6 +74,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
         targetv = Variable(gan_target)
         optimizerD.zero_grad()
         output = netD(data)
+        
         errD_real = criterionD(output, targetv)
         errD_real.backward()
 
