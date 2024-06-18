@@ -109,6 +109,7 @@ class _netD256(nn.Module):
         if isinstance(input.data, torch.cuda.FloatTensor) and self.ngpu > 1:
             output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
         else:
+            output = input
             for i, layer in enumerate(self.main):
                 output = layer(output)
                 if isinstance(layer, nn.Conv2d):
