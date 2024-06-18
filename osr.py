@@ -120,7 +120,7 @@ def main_worker(options):
         
         trainloader = torch.utils.data.DataLoader(
             train_data,
-            batch_size=options["batch-size"],
+            batch_size=options["batch_size"],
             shuffle=True,
             num_workers=4,
             pin_memory=True)
