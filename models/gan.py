@@ -113,8 +113,7 @@ class _netD256(nn.Module):
             output = input
             for i, layer in enumerate(self.main):
                 output = layer(output)
-                if isinstance(layer, nn.Conv2d):
-                    print(f"Output size after layer {i} (Conv2d): {output.size()}")
+                
         
         output = self.avgpool(output)
         output = torch.flatten(output, 1)
