@@ -61,6 +61,13 @@ class _netD32(nn.Module):
 class _netD256(nn.Module):
     def __init__(self, ngpu, nc, ndf):
         super(_netD256, self).__init__()
+        
+        '''
+        ngpu: number of gpus
+        nc: number of channels, e.g. 3 for RGB
+        ndf: number of features
+        '''
+        
         self.ngpu = ngpu
         self.main = nn.Sequential(
             # input size. (nc) x 256 x 256
@@ -102,7 +109,10 @@ class _netD256(nn.Module):
         if isinstance(input.data, torch.cuda.FloatTensor) and self.ngpu > 1:
             output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
         else:
-            output = self.main(input)
+            for i, layer in enumerate(self.main):
+                output = layer(output)
+                if isinstance(layer, nn.Conv2d):
+                    print(f"Output size after layer {i} (Conv2d): {output.size()}")
         
         output = self.avgpool(output)
         output = torch.flatten(output, 1)
