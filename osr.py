@@ -234,6 +234,9 @@ def main_worker(options):
 if __name__ == '__main__':
     args = parser.parse_args()
     options = vars(args)
+    
+    print(options)
+    
     options['dataroot'] = os.path.join(options['dataroot'], options['dataset'])
     img_size = 32
     results = dict()
