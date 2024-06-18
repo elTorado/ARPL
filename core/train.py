@@ -48,23 +48,13 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
         ns: noise size - hight and weight of noise, spatial dimension
         nz: noise dimension - dimensions of latent space
         '''
+
+        noise = torch.FloatTensor(data.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
+
+        noise = Variable(noise)
+        noise = device(noise)
         
-        if options['dataset'] == "imagenet":
-            
-            noise = torch.FloatTensor(data.size(0), options['nz'], options['ns'], options['ns'], options['ns']).normal_(0, 1).cuda()
-
-            noise = Variable(noise)
-            noise = device(noise)
-            
-            fake = netG(noise)
-            
-        else:
-            noise = torch.FloatTensor(data.size(0), options['nz'], options['ns'], options['ns']).normal_(0, 1).cuda()
-
-            noise = Variable(noise)
-            noise = device(noise)
-            
-            fake = netG(noise)
+        fake = netG(noise)
 
         ###########################
         # (1) Update D network    #
