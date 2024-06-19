@@ -95,7 +95,7 @@ def generate_arpl_images(netG, options):
     images = generate_images(netG, iterations, trainloader, options)
     
     result_dir = options["result_dir"]
-    images = export_images(images=images, result_dir=result_dir, dataloader=trainloader)
+    images = export_images( options=options, images=images, result_dir=result_dir, dataloader=trainloader)
     print("DONE")
 
 def generate_images(netG, iterations, trainloader, options):
@@ -162,12 +162,19 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
         os.mkdir(path)
     return video_filename
 
-def export_images(images, result_dir, dataloader):
+def export_images(options, images, result_dir, dataloader):
     # Reshap to  (batch, seq, height, width)
     print("Shape of images before squeeze:", images.shape)
 
-    images = images.data.cpu().numpy().squeeze(2)  
+    
+    if not options["dataset"] == "imagenet":
+        
+        # squeee single color channel of non RGB images
+        images = images.data.cpu().numpy().squeeze(2)   
 
+    else:
+        images = images.data.cpu().numpy()
+    
     # Ensure images are scaled to 0-255 and adjust if needed
     if images.max() <= 1.0:
         images *= 255  
@@ -189,8 +196,13 @@ def export_images(images, result_dir, dataloader):
         if len(batch_images) > 0:
             num_cols = max(int(np.sqrt(len(batch_images))), 1)  # Ensure at least 1 column
             num_rows = (len(batch_images) + num_cols - 1) // num_cols  # Calculate rows ensuring at least 1 row
-            grid_image = Image.new('L', (num_cols * frame.shape[1], num_rows * frame.shape[0]))  # Create a new empty image
-
+            
+            if options["dataset"] == "imagenet":                        # Create a new empty image for RGB
+                grid_image = Image.new('RGB', (num_cols * frame.shape[1], num_rows * frame.shape[0]))
+            else:
+                # Create a new empty image for grayscale
+                grid_image = Image.new('L', (num_cols * frame.shape[1], num_rows * frame.shape[0]))
+                        
             # Place images in the grid
             for index, image in enumerate(batch_images):
                 row = index // num_cols
