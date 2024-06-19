@@ -53,13 +53,16 @@ parser.add_argument('--cs', action='store_true', help="Confusing Sample", defaul
 parser.add_argument('--generate', action='store_true', help="Confusing Sample", default=False)
 parser.add_argument('--number_images', type= int, help="number of images to create", default = 100)
 
-imagenet_path = '/local/scratch/datasets/ImageNet/ILSVRC2012/'
-train_file = 'protocols/p{}_train.csv'
+
 
 
 def generate_arpl_images(netG, options):
 
     if options["dataset"] == "imagenet":
+        
+        imagenet_path = '/local/scratch/datasets/ImageNet/ILSVRC2012/'
+        train_file = 'protocols/p{}_train.csv'
+        
         train_tr = transforms.Compose(
             [transforms.Resize(256),
             transforms.RandomCrop(224),
