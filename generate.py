@@ -8,10 +8,11 @@ import numpy as np
 import imutil
 from PIL import Image
 import pathlib
-from datasets.datasets import EMNIST
+from datasets.datasets import EMNIST, ImageNet
 import argparse
 from models import gan
 from vast.tools import set_device_gpu, set_device_cpu, device
+from torchvision import transforms
 
 parser = argparse.ArgumentParser("Generating Images")
 
@@ -52,12 +53,39 @@ parser.add_argument('--cs', action='store_true', help="Confusing Sample", defaul
 parser.add_argument('--generate', action='store_true', help="Confusing Sample", default=False)
 parser.add_argument('--number_images', type= int, help="number of images to create", default = 100)
 
+imagenet_path = '/local/scratch/datasets/ImageNet/ILSVRC2012/'
+train_file = 'protocols/p{}_train.csv'
 
 
 def generate_arpl_images(netG, options):
 
-    Data = EMNIST(options=options, val = False, test = False)
-    trainloader = Data.train_loader
+    if options["dataset"] == "imagenet":
+        train_tr = transforms.Compose(
+            [transforms.Resize(256),
+            transforms.RandomCrop(224),
+            transforms.RandomHorizontalFlip(0.5),
+            transforms.ToTensor()])
+        
+        train_file = pathlib.Path(train_file.format(options["protocol"]))
+            
+        train_data = ImageNet(
+                csv_file=train_file,
+                imagenet_path=imagenet_path,
+                transform=train_tr
+            )
+            
+        trainloader = torch.utils.data.DataLoader(
+            train_data,
+            batch_size=options["batch_size"],
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True)
+        
+        options['num_classes'] = train_data.label_count
+    else:
+        Data = EMNIST(options=options, val = False, test = False)
+        trainloader = Data.train_loader
+        
     iterations = options["number_images"]    
     
     images = generate_images(netG, iterations, trainloader, options)
