@@ -164,6 +164,8 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
 
 def export_images(images, result_dir, dataloader):
     # Reshap to  (batch, seq, height, width)
+    print("Shape of images before squeeze:", images.shape)
+
     images = images.data.cpu().numpy().squeeze(2)  
 
     # Ensure images are scaled to 0-255 and adjust if needed
