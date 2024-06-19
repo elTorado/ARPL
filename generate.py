@@ -181,7 +181,11 @@ def get_network(options):
         set_device_cpu()
     
     nz, ns = options['nz'], 1
-    network = gan.Generator32(1, nz, 64, 1)
+    
+    if options["dataset"] == "imagenet":
+        network = gan.gan.Generator256(1, nz, 64, 3)
+    else:
+        network = gan.Generator32(1, nz, 64, 1)
     
     epoch = options["max_epoch"]
     pth = get_pth_by_epoch(options['result_dir'], "netG", epoch)
