@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser("Generating Images")
 parser.add_argument('--dataset', type=str, default='mnist', help="mnist | svhn | cifar10 | cifar100 | tiny_imagenet")
 parser.add_argument('--dataroot', type=str, default='/home/user/heizmann/data/EMNIST/')
 parser.add_argument('--outf', type=str, default='./log')
+parser.add_argument('--protocol', type=int, default=2, help='imagenet protocol')
 
 # optimization
 parser.add_argument('--batch-size', type=int, default=64)
