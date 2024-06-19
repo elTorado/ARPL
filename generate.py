@@ -163,21 +163,20 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
     return video_filename
 
 def export_images(options, images, result_dir, dataloader):
-    # Reshap to  (batch, seq, height, width)
-    print("Shape of images before squeeze:", images.shape)
+    # Print the shape of the images before processing
+    print("Shape of images before processing:", images.shape)
 
-    
-    if not options["dataset"] == "imagenet":
-        
-        # squeee single color channel of non RGB images
-        images = images.data.cpu().numpy().squeeze(2)   
-
+    if options["dataset"] != "imagenet":
+        # Squeeze single color channel of non-RGB images
+        images = images.data.cpu().numpy().squeeze(2)
     else:
         images = images.data.cpu().numpy()
     
     # Ensure images are scaled to 0-255 and adjust if needed
+    print("Image values before scaling:", images.min(), images.max())
     if images.max() <= 1.0:
-        images *= 255  
+        images *= 255
+    print("Image values after scaling:", images.min(), images.max())
 
     images_dir = os.path.join(result_dir, 'images')
     if not os.path.exists(images_dir):
@@ -187,13 +186,20 @@ def export_images(options, images, result_dir, dataloader):
         batch_images = []  
         for frame_index, frame in enumerate(seq):
             if options["dataset"] == "imagenet":
-                # for ImageNet, transpose the frame to move the channel dimension to the end
+                # For ImageNet, transpose the frame to move the channel dimension to the end
                 frame = np.transpose(frame, (1, 2, 0))
+                # Create an RGB image
                 img = Image.fromarray(frame.astype('uint8'), 'RGB')
             else:
                 # Squeeze the single color channel for grayscale images
                 frame = frame.squeeze()
+                # Create a grayscale image
                 img = Image.fromarray(frame.astype('uint8'), 'L')
+            
+            # Display the image using matplotlib for debugging
+            plt.imshow(img, cmap='gray' if options["dataset"] != "imagenet" else None)
+            plt.title(f'Batch {batch_index}, Frame {frame_index}')
+            plt.show()
 
             filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
             img.save(os.path.join(images_dir, filename))
@@ -204,7 +210,8 @@ def export_images(options, images, result_dir, dataloader):
             num_cols = max(int(np.sqrt(len(batch_images))), 1)  # Ensure at least 1 column
             num_rows = (len(batch_images) + num_cols - 1) // num_cols  # Calculate rows ensuring at least 1 row
             
-            if options["dataset"] == "imagenet":                        # Create a new empty image for RGB
+            if options["dataset"] == "imagenet":
+                # Create a new empty image for RGB
                 grid_image = Image.new('RGB', (num_cols * frame.shape[1], num_rows * frame.shape[0]))
             else:
                 # Create a new empty image for grayscale
@@ -221,6 +228,8 @@ def export_images(options, images, result_dir, dataloader):
             grid_image.save(os.path.join(images_dir, grid_filename))
         else:
             print(f"No images to process in batch {batch_index}")
+
+    return images
 
 
 def get_network(options):
