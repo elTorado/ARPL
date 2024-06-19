@@ -13,6 +13,7 @@ import argparse
 from models import gan
 from vast.tools import set_device_gpu, set_device_cpu, device
 from torchvision import transforms
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser("Generating Images")
 
