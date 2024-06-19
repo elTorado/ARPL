@@ -186,8 +186,15 @@ def export_images(options, images, result_dir, dataloader):
     for batch_index, seq in enumerate(images):
         batch_images = []  
         for frame_index, frame in enumerate(seq):
-            # Create a grayscale image
-            img = Image.fromarray(frame.astype('uint8'), 'L')  
+            if options["dataset"] == "imagenet":
+                # for ImageNet, transpose the frame to move the channel dimension to the end
+                frame = np.transpose(frame, (1, 2, 0))
+                img = Image.fromarray(frame.astype('uint8'), 'RGB')
+            else:
+                # Squeeze the single color channel for grayscale images
+                frame = frame.squeeze()
+                img = Image.fromarray(frame.astype('uint8'), 'L')
+
             filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
             img.save(os.path.join(images_dir, filename))
             batch_images.append(img)
