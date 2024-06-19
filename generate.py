@@ -183,7 +183,7 @@ def get_network(options):
     nz, ns = options['nz'], 1
     
     if options["dataset"] == "imagenet":
-        network = gan.gan.Generator256(1, nz, 64, 3)
+        network = gan.Generator256(1, nz, 64, 3)
     else:
         network = gan.Generator32(1, nz, 64, 1)
     
