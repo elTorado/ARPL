@@ -164,8 +164,6 @@ def make_video_filename(result_dir, dataloader, label_type='active'):
     return video_filename
 
 def export_images(options, images, result_dir, dataloader):
-    # Print the shape of the images before processing
-    print("Shape of images before processing:", images.shape)
 
     if options["dataset"] != "imagenet":
         # Squeeze single color channel of non-RGB images
@@ -189,7 +187,6 @@ def export_images(options, images, result_dir, dataloader):
             if options["dataset"] == "imagenet":
                 # For ImageNet, transpose the frame to move the channel dimension to the end
                 frame = np.transpose(frame, (1, 2, 0))
-                # Create an RGB image
                 img = Image.fromarray(frame.astype('uint8'), 'RGB')
             else:
                 # Squeeze the single color channel for grayscale images
@@ -197,10 +194,6 @@ def export_images(options, images, result_dir, dataloader):
                 # Create a grayscale image
                 img = Image.fromarray(frame.astype('uint8'), 'L')
             
-            # Display the image using matplotlib for debugging
-            plt.imshow(img, cmap='gray' if options["dataset"] != "imagenet" else None)
-            plt.title(f'Batch {batch_index}, Frame {frame_index}')
-            plt.show()
 
             filename = f'arpl_batch{batch_index}_frame{frame_index}_{int(time.time())}.jpg'
             img.save(os.path.join(images_dir, filename))
