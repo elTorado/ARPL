@@ -109,7 +109,7 @@ class EMNIST(torch.utils.data.dataset.Dataset):
                     num_workers=self.workers, pin_memory=self.pin_memory,
                     )
             
-            print("TEST LABELS: ", EMNIST.get_labels(self.test_loader))
+
         
         ############## TEST DATA ########################
         
@@ -118,13 +118,13 @@ class EMNIST(torch.utils.data.dataset.Dataset):
                 root=self.dataset_root,
                 transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform  ])
             )
-            print("OPEN SET LABELS: ", EMNIST.get_labels(self.out_loader))
+            
             self.out_loader = torch.utils.data.DataLoader(
             self.letters, batch_size=self.batch_size, shuffle=True, 
             num_workers=self.workers,  pin_memory=self.pin_memory,
             )
     
-        
+
 
         
 
