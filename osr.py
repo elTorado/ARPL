@@ -74,7 +74,7 @@ def main_worker(options):
 
     
     torch.manual_seed(options['seed'])
-    options["use_gpu"] == True
+    options["use_gpu"] = True
     
     # Dataset
     print("{} Preparation".format(options['dataset']))
