@@ -99,10 +99,11 @@ class EMNIST(torch.utils.data.dataset.Dataset):
                 transform=transforms.Compose([transforms.ToTensor(), EMNIST.transform])
             )
             print("TEST LABELS: ", EMNIST.get_labels(self.test_loader))
+            
             self.test_loader = torch.utils.data.DataLoader(
-            self.valdata, batch_size=self.batch_size, shuffle=False,
-            num_workers=self.workers, pin_memory=self.pin_memory,
-            )
+                    self.valdata, batch_size=self.batch_size, shuffle=False,
+                    num_workers=self.workers, pin_memory=self.pin_memory,
+                    )
         
         if test:
             self.letters = CustomEMNIST(
