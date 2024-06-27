@@ -66,7 +66,6 @@ parser.add_argument('--number_images', type= int, help="number of images to crea
 
 def main_worker(options):
     
-    #options['dataroot'] = '/home/deanheizmann/dataset/emnist'
     options['dataroot'] = '/home/user/heizmann/dataset/emnist'
     
     imagenet_path = '/local/scratch/datasets/ImageNet/ILSVRC2012/'
@@ -81,7 +80,9 @@ def main_worker(options):
     
     if 'emnist' in options['dataset']:
         Data = EMNIST(options=options)
-        trainloader, testloader, outloader = Data.train_loader, Data.test_loader, Data.out_loader
+        
+        # We dont deen any other than the training loader
+        trainloader= Data.train_loader
         options['num_classes'] = Data.num_classes
         
     if 'imagenet' in options['dataset']:
@@ -92,6 +93,7 @@ def main_worker(options):
             transforms.RandomHorizontalFlip(0.5),
             transforms.ToTensor()])
 
+        # We dont deen any other than the training loader
         val_tr = transforms.Compose(
             [transforms.Resize(256),
             transforms.CenterCrop(224),
@@ -154,12 +156,13 @@ def main_worker(options):
     # Loss
     options.update(
     feat_dim=feat_dim,
-    use_gpu=use_gpu
     )
 
     Loss = importlib.import_module('loss.'+options['loss'])
     criterion = getattr(Loss, options['loss'])(**options)
-
+    
+    
+    '''
     if use_gpu:
         net = nn.DataParallel(net).cuda()
         criterion = criterion.cuda()
@@ -167,13 +170,14 @@ def main_worker(options):
             netG = nn.DataParallel(netG, device_ids=[i for i in range(len(options['gpu'].split(',')))]).cuda()
             netD = nn.DataParallel(netD, device_ids=[i for i in range(len(options['gpu'].split(',')))]).cuda()
             fixed_noise.cuda()
-
+    '''
+    
     model_path = os.path.join(options['outf'], 'models', options['dataset'])
     if not os.path.exists(model_path):
         os.makedirs(model_path)
         
     
-
+    '''
     if options['dataset'] == 'cifar100':
         model_path += '_50'
         file_name = '{}_{}_{}_{}_{}'.format(options['model'], options['loss'], 50, options['item'], options['cs'])
@@ -187,13 +191,13 @@ def main_worker(options):
 
         return results
 
+    '''
+    
     params_list = [{'params': net.parameters()},
                 {'params': criterion.parameters()}]
     
-    if options['dataset'] == 'tiny_imagenet':
-        optimizer = torch.optim.Adam(params_list, lr=options['lr'])
-    else:
-        optimizer = torch.optim.SGD(params_list, lr=options['lr'], momentum=0.9, weight_decay=1e-4)
+    optimizer = torch.optim.SGD(params_list, lr=options['lr'], momentum=0.9, weight_decay=1e-4)
+    
     if options['cs']:
         optimizerD = torch.optim.Adam(netD.parameters(), lr=options['gan_lr'], betas=(0.5, 0.999))
         optimizerG = torch.optim.Adam(netG.parameters(), lr=options['gan_lr'], betas=(0.5, 0.999))

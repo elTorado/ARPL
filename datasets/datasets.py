@@ -74,7 +74,9 @@ class EMNIST(torch.utils.data.dataset.Dataset):
         self.num_classes = 10
           
         print(" DATASET ROOR IS :", self.dataset_root) 
-          
+        
+        ############## TRAIN DATA ########################
+        
         self.traindata = torchvision.datasets.EMNIST(
             root=self.dataset_root,
             train=True,
@@ -90,6 +92,8 @@ class EMNIST(torch.utils.data.dataset.Dataset):
         
         print("TRAINING LABELS: ", EMNIST.get_labels(self.train_loader))
 
+        ############## VALIDATION DATA ########################
+        
         if val:
             self.valdata = torchvision.datasets.EMNIST(
                 root=self.dataset_root,
@@ -104,6 +108,8 @@ class EMNIST(torch.utils.data.dataset.Dataset):
                     self.valdata, batch_size=self.batch_size, shuffle=False,
                     num_workers=self.workers, pin_memory=self.pin_memory,
                     )
+        
+        ############## TEST DATA ########################
         
         if test:
             self.letters = CustomEMNIST(
