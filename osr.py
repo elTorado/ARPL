@@ -74,17 +74,6 @@ def main_worker(options):
 
     
     torch.manual_seed(options['seed'])
-    os.environ['CUDA_VISIBLE_DEVICES'] = options['gpu']
-    use_gpu = torch.cuda.is_available()
-    if options['use_cpu']: use_gpu = False
-
-    if use_gpu:
-        print("Currently using GPU: {}".format(options['gpu']))
-        options.update({'use_gpu':  True})
-        cudnn.benchmark = True
-        torch.cuda.manual_seed_all(options['seed'])
-    else:
-        print("Currently using CPU")
     # Dataset
     print("{} Preparation".format(options['dataset']))
     
