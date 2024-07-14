@@ -6,8 +6,32 @@ import pathlib
 import os
 from vast.tools import set_device_gpu, set_device_cpu, device
 
-def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, optimizerG, 
-        trainloader, epoch=None, **options):
+def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, optimizerG, trainloader, epoch=None, **options):
+    """
+        GAN training loop. Generator and Discriminator are alternately, iteratively updated.
+        A random noise tensor is initialized and feed into the generator. The generator creates an fake image.
+        The training algorithm feeds it to the discriminator and it classifies it as real or fake.
+        Gradient Descent is applied to update network weights and the training loop restars. 
+        
+        The classifier training is commented out as it is not needed and to save time and resources. 
+
+        Args:
+        net (torch.nn.Module): Classifier - actually not used in this function.
+        netD (torch.nn.Module): Discriminator network.
+        netG (torch.nn.Module): Generator network.
+        criterion (torch.nn.Module): Loss function for the classifier.
+        criterionD (torch.nn.Module): Loss function for the discriminator.
+        optimizer (torch.optim.Optimizer): Optimizer for the classifier.
+        optimizerD (torch.optim.Optimizer): Optimizer for the discriminator.
+        optimizerG (torch.optim.Optimizer): Optimizer for the generator.
+        trainloader (torch.utils.data.DataLoader): DataLoader for training data.
+        epoch (int, optional): Current epoch number. Defaults to None.
+        **options (dict): Additional options for training such as 'use_gpu', 'gpu', 'nz', 'ns', 'beta', 'print_freq'.
+
+    Returns:
+        float: The average loss of the training.
+        torch.nn.Module: The trained generator network.
+    """    
     print('train with confusing samples')
     
     # setup device

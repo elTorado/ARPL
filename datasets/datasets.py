@@ -10,9 +10,25 @@ import pandas as pd
 from pathlib import Path
 import numpy as np
 from PIL import Image
-from utils import mkdir_if_missing
+
+'''
+    This file contains the dataset classes  for ImageNet and Emnist. 
+    There are also other implementations conserved from the older implementation
+    such as MNIST. 
+
+'''
+
 
 def pad_tensor(img, target_size=(32, 32)):
+    """Pads a given tensor to the target size with constant values.
+
+    Args:
+        img (torch.Tensor): The input image tensor to be padded.
+        target_size (tuple, optional): The target size (width, height) to pad the image to. Defaults to (32, 32).
+
+    Returns:
+        torch.Tensor: The padded image tensor.
+    """   
     # Calculate padding for each side
     height_pad = (target_size[1] - img.size(1)) // 2
     width_pad = (target_size[0] - img.size(2)) // 2
@@ -21,7 +37,6 @@ def pad_tensor(img, target_size=(32, 32)):
     # The padding format is (left, right, top, bottom)
     padded_img = F.pad(img, (width_pad, width_pad, height_pad, height_pad), mode='constant', value=0)
     return padded_img
-
 
 class CustomEMNIST(torch.utils.data.dataset.Dataset):
     def __init__(self, root, transform=None):
@@ -42,20 +57,49 @@ class CustomEMNIST(torch.utils.data.dataset.Dataset):
         return data, -1
 
 class EMNIST(torch.utils.data.dataset.Dataset):
+    """
+    EMNIST Dataset class.
+    This class loads the EMNIST dataset, applies necessary transformations, and creates DataLoaders for training, validation, and testing.
+    It also provides unique getter methods for itam and all labels and a transform method. 
+
+    Args:
+        val (bool, optional): If True, loads the validation set. Defaults to True.
+        test (bool, optional): If True, loads the test set. Defaults to True.
+        **options (dict): Additional options for the dataset.
+
+    Attributes:
+        workers (int): Number of worker processes for loading data.
+        which_set (str): Training set being used, default is "train".
+        batch_size (int): Batch size for the DataLoader.
+        dataset_root (str): Root directory of the Imagenet dataset.
+        pin_memory (bool): If True, the data loader will copy Tensors into CUDA pinned memory.
+        num_classes (int): Number of classes in the dataset.
+        traindata (torchvision.datasets.EMNIST): Training dataset.
+        train_loader (torch.utils.data.DataLoader): DataLoader for the training dataset.
+        valdata (torchvision.datasets.EMNIST): Validation dataset.
+        test_loader (torch.utils.data.DataLoader): DataLoader for the validation dataset.
+        letters (CustomEMNIST): Test dataset containing letters.
+        out_loader (torch.utils.data.DataLoader): DataLoader for the test dataset.
     
-    ''' IS ZERO PADDING NECESSARY AS WE CAN CHOOSE AN IMAGE SIZE??'''
+    """
+ 
     
-    # We only need the digits from the mnist split for the ARPL implementation, hence there is no need to 
-    # create any logic around the letters.
-    
+    # We only need the digits from the mnist split for the ARPL implementation, hence there is no need to create any logic around the letters.
     def transform(x):
-        
+        """Transform function to pad and transpose the tensor. """
         x = pad_tensor(x)
         x = x.transpose(2,1)
         
         return x
     
     def get_labels(dataloader):
+            """
+                Get unique labels from the dataloader
+            
+                Return:
+                unique_labels (set): set of all the labels in the dataloader  
+            """
+        
             unique_labels = set()
             for data in dataloader:
                 inputs, labels = data
@@ -122,16 +166,18 @@ class EMNIST(torch.utils.data.dataset.Dataset):
             self.out_loader = torch.utils.data.DataLoader(
             self.letters, batch_size=self.batch_size, shuffle=True, 
             num_workers=self.workers,  pin_memory=self.pin_memory,
-            )
-    
-
-
-        
-
-               
-                
+            )               
                 
         def __getitem__(self, index):
+            """
+                Get item from the dataset at the specified index.
+
+                Args:
+                    index (int): Index of the item to be fetched.
+
+                Returns:
+                    tuple: (image, target) where image is the transformed image and target is the label.
+            """           
             img, target = self.data[index], int(self.targets[index])
             img = Image.fromarray(img.numpy(), mode='L')
 
@@ -144,7 +190,24 @@ class EMNIST(torch.utils.data.dataset.Dataset):
             return img, target
   
 class ImageNet(torch.utils.data.dataset.Dataset):
-    
+    """ 
+        ImageNet dataset class
+        Custom Dataset for loading ImageNet data from a CSV file.
+        Filters out negative labels and loads images from the specified path.
+        It also applies transformations to the images if provided.
+
+        Args:
+            csv_file (str): Path to the CSV file containing image paths and labels.
+            imagenet_path (str): Path to the ImageNet images directory.
+            transform (callable, optional): Optional transform to be applied on an image.
+
+        Attributes:
+            dataset (pd.DataFrame): DataFrame containing image paths and labels.
+            imagenet_path (Path): Path object for the ImageNet images directory.
+            transform (callable): Transform to be applied on an image.
+            label_count (int): Number of unique labels in the dataset.
+            unique_classes (np.ndarray): Sorted array of unique classes in the dataset.
+    """
     def __init__(self, csv_file, imagenet_path, transform = None):
         
         self.dataset = pd.read_csv(csv_file, header=None)
@@ -184,9 +247,7 @@ class ImageNet(torch.utils.data.dataset.Dataset):
         label = torch.as_tensor(int(label), dtype=torch.int64)
         return image, label
 
-  
-  
-        
+    
 class MNIST(object):
     def __init__(self, **options):
         transform = transforms.Compose([

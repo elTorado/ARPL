@@ -2,7 +2,6 @@ import os
 import argparse
 import datetime
 import time
-import csv
 import pandas as pd
 import importlib
 from torchvision import transforms
@@ -13,7 +12,6 @@ import torch.nn.functional as F
 from torch.optim import lr_scheduler
 import torch.multiprocessing as mp
 import torch.backends.cudnn as cudnn
-
 from models import gan
 from models.models import classifier32, classifier32ABN
 from datasets.datasets import EMNIST, ImageNet
@@ -64,7 +62,49 @@ parser.add_argument('--generate', action='store_true', help="Confusing Sample", 
 parser.add_argument('--number_images', type= int, help="number of images to create", default = 100)
 
 
+'''
+    This file provides the worker function that handles the ARPL - GAN training.
+    It initializes the respective dataloaders and networks, and guides the training loop.
+    
+    Important:
+        The paths to the EMNST and ImageNet, as well as to the protocol files need to be hardcoded. 
+
+'''
+
 def main_worker(options):
+    """
+    Main worker function for GAN training.
+
+    Args:
+        options (dict): Dictionary containing parsed arguments and provides configurations for process. 
+
+    Attributes:
+        options['dataroot'] (str): Root directory for the EMNIST dataset.
+        imagenet_path (str): Path to the ImageNet dataset.
+        train_file (str): Path to the training CSV file.
+        options['seed'] (int): Seed for random number generation.
+        options['use_gpu'] (bool): Flag indicating whether to use GPU.
+        options['dataset'] (str): The dataset to be used ('emnist' or 'imagenet').
+        options['num_classes'] (int): Number of classes in the dataset.
+        trainloader (torch.utils.data.DataLoader): DataLoader for the training dataset.
+        net (torch.nn.Module): Neural network model.
+        feat_dim (int): Feature dimension.
+        netG (torch.nn.Module): Generator network for GAN (if options['cs'] is True).
+        netD (torch.nn.Module): Discriminator network for GAN (if options['cs'] is True).
+        criterion (torch.nn.Module): Loss criterion for classfier ( will not be used though).
+        criterionD (torch.nn.Module): Loss criterion for the discriminator.
+        optimizer (torch.optim.Optimizer): Optimizer for the classfier model (will not be used though).
+        optimizerD (torch.optim.Optimizer): Optimizer for the discriminator (if options['cs'] is True).
+        optimizerG (torch.optim.Optimizer): Optimizer for the generator (if options['cs'] is True).
+        scheduler (torch.optim.lr_scheduler.MultiStepLR): Learning rate scheduler.
+        model_path (str): Path to save the model.
+        epoch (int): Current epoch.
+        start_time (float): Start time of training - used in logging.
+        elapsed (str): Total elapsed time for training - used in logging.
+
+    Returns:
+        None
+    """
     
     options['dataroot'] = '/home/user/heizmann/dataset/emnist'
     
@@ -121,7 +161,6 @@ def main_worker(options):
         options['num_classes'] = train_data.label_count
 
     # Model
-    print("Creating model: {}".format(options['model']))
     if options['cs']:
         net = classifier32ABN(num_classes=options['num_classes'])
     else:

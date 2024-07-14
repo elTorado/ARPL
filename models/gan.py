@@ -6,6 +6,15 @@ import torch.nn.functional as F
 import os
 import numpy as np
 
+
+'''
+    This file contains the networks used for GAN training.
+    The networks ending ond 32 are used for small scale dataset such as EMNIST, 
+    The networks ending on 256 are deeper and more comples, used for largse-scale
+    datasets such as ImageNet.
+
+'''
+
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
