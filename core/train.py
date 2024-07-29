@@ -57,7 +57,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
     loss_all, real_label, fake_label = 0, 1, 0
     for batch_idx, (data, labels) in enumerate(trainloader):
         
-        # ONLY USE POSITIVE CLASSES!
+        
         if (labels < 0).any():
           
             gan_target = torch.FloatTensor(labels.size()).fill_(0)
@@ -118,7 +118,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
             lossesG.update(generator_loss.item(), labels.size(0))
             lossesD.update(errD.item(), labels.size(0))
 
-            '''
+            
 
             ###########################
             # (3) Update classifier   #
@@ -146,7 +146,7 @@ def train_cs(net, netD, netG, criterion, criterionD, optimizer, optimizerD, opti
                 print("Batch {}/{}\t Net {:.3f} ({:.3f}) G {:.3f} ({:.3f}) D {:.3f} ({:.3f})" \
                 .format(batch_idx+1, len(trainloader), losses.val, losses.avg, lossesG.val, lossesG.avg, lossesD.val, lossesD.avg))
         
-            '''
+            
             loss_all += losses.avg
 
 
